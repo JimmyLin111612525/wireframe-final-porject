@@ -1,0 +1,82 @@
+html {
+    min-height: 100%;
+  }
+  
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+      "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+      sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    min-height: 100%;
+  }
+
+  body {
+    position: absolute;
+    width: 80%;
+    left: 10%;
+    top: 5%;
+  }
+  
+  div.banner {
+    padding: 20px;
+    margin-top: 60px;
+    text-align: center;
+  }
+  
+  form {
+    padding: 20px;
+    margin-top: 60px;
+  }
+  
+  form button, form h5 {
+    margin: 20px 0;
+  }
+  
+  .list-screen-container{
+    padding-bottom: 40px;
+  }
+  
+  .due-date,.completed,.assigned-to,.card-due-date,.card-completed,.card-assigned-to{
+    
+  }
+  .assigned-to{
+  }
+  
+  .card-title{
+    font-weight:bolder;
+    text-align: center;
+  }
+
+  .home_new_wireframe_button{
+    width:60%;
+    height:25%;
+    font-size:20px;
+    left:20%;
+  }
+
+.wireframe-card{
+  position: relative;
+}
+  
+  .delete-wireframe{
+    position: absolute;
+    top:33%;
+    right:8%;
+    color: #e03636;
+    z-index: 1;
+  }
+
+  .delete-wireframe:hover{
+    cursor: pointer;
+  }
+
+  .delete-wireframe-back{
+    position: absolute;
+    top:33%;
+    right:8%;
+    color: #fff;
+    z-index: 0;
+  }
