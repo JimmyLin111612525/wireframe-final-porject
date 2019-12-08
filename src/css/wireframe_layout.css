@@ -80,3 +80,120 @@ html {
     color: #fff;
     z-index: 0;
   }
+
+  .properties-container{
+    position: absolute;
+    top:10px;
+    right:60px;
+    width:10%;
+    border-bottom:1px solid #fff;
+  }
+
+  .properties-text{
+    position: relative;
+    left:20px;
+  }
+
+  .edit-save-close{
+    position: absolute;
+    right:10px;
+  }
+
+  .container-container{
+    position: absolute;
+    top:80px;
+    left:86px;
+    text-align: center;
+    padding-bottom:29px;
+    padding-right:5px;
+    padding-left:5px;
+    border-radius:5px;
+    /*border-color:black;
+    border-width:0.5px;
+    border-style:solid;*/
+  }
+
+  .container-container:hover{
+    cursor: pointer;
+    background-color: #092749;
+  }
+
+  .add-container-text{
+    position: absolute;
+    top:40px;
+  }
+
+  .add-label-container{
+    position: absolute;
+    top:213px;
+    text-align: center;
+    left:87px;
+    border-radius:5px;
+    padding-right:7px;
+    padding-left:7px;
+    /*border-color:black;
+    border-width:0.5px;
+    border-style:solid;*/
+  }
+
+  .add-label-container:hover{
+    cursor: pointer;
+    background-color: #092749;
+  }
+
+  .add-label-text{
+    font-size:13px;
+  }
+
+  .add-button-container{
+    position: absolute;
+    top:337px;
+    text-align: center;
+    left:87px;
+    border-radius:5px;
+    padding-top:9px;
+    padding-right:7px;
+    padding-left:7px;
+    /*border-color:black;
+    border-width:0.5px;
+    border-style:solid;*/
+  }
+
+  .add-button-container:hover{
+    cursor: pointer;
+    background-color: #092749;
+  }
+  
+  .add-button-text{
+    font-size:11px;
+  }
+
+  .add-textfield-container{
+    position: absolute;
+    top:450px;
+    text-align: center;
+    left:87px;
+    border-radius:5px;
+    padding-top:11px;
+    padding-right:7px;
+    padding-left:7px;
+    /*border-color:black;
+    border-width:0.5px;
+    border-style:solid;*/
+  }
+
+  .add-textfield-container:hover{
+    cursor: pointer;
+    background-color: #092749;
+  }
+
+  .add-textfield-text{
+    font-size:9.75px;
+  }
+
+  .properties-list{
+    position: absolute;
+    top:80px;
+    right:0px;
+    font-size: 10px;
+  }

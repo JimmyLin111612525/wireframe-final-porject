@@ -41,3 +41,82 @@
   .home_new_wireframe_button:hover {
     box-shadow: 1px 2px;
   }
+
+  .edit-container{
+    position: relative;
+    top:30px;
+    background-color:#0b325e;
+    color: #fff;
+    height:650px;
+    border-radius: 5px;
+  }
+
+  .zoom-in,.zoom-out{
+    font-size: 40px;
+    border-radius:4px;
+  }
+
+  .zoom-in{
+    position: relative;
+    top:20px;
+    left:5px;
+  }
+
+  .zoom-in:hover, .zoom-out:hover{
+    cursor: pointer;
+    background-color: #092749;
+  }
+
+  .zoom-out{
+    position: relative;
+    left:25px;
+    top:20px;
+  }
+
+  .zoom-container{
+    position: absolute;
+    padding-bottom: 30px;
+    border-bottom: 1px solid #fff;
+    width:10%;
+    left:60px
+  }
+
+  .save-button{
+    position: relative;
+    right:10px
+  }
+
+  .container-symbol{
+    font-size:60px;
+  }
+
+  .add-container-text{
+    font-size:13px;
+  }
+
+  .active-screen{
+    position: absolute;
+    color:black;
+    background-color:white;
+    height:91%;
+    width:60%;
+    left:245px;
+    top:25px;
+    border-color:black;
+    border-width:0.5px;
+    border-style:solid;
+    overflow:auto;
+  }
+
+  .width-textbox{
+    color:white;
+    width:5px;
+  }
+
+  .label-markup-input{
+    color:white;
+  }
+
+  .label-markup-text{
+    color:white;
+  }

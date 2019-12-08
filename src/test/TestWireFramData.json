@@ -68,8 +68,8 @@
         {
             "key":2,
             "name":"WireFrame 2",
-            "wireFrameWidth":"2500",
-            "wireFrameHeight":"2500",
+            "wireFrameWidth":"400",
+            "wireFrameHeight":"400",
             "controls":[{
                 "name":"addContainer",
                 "positionX":"200",
@@ -79,19 +79,15 @@
                 "backgroundColor":"#fff",
                 "borderThickness":"2",
                 "borderRadius":"6",
-                "borderColor":"fff",
-                "textColor":"fff"
+                "borderColor":"#000",
+                "textColor":"#fff"
             },
             {
                 "name":"addLabel",
                 "positionX":"200",
                 "positionY":"500",
-                "controlWidth":"300",
-                "controlHeight":"300",
-                "backgroundColor":"#fff",
-                "borderThickness":"5",
-                "borderRadius":"4",
-                "borderColor":"fff",
+                "controlWidth":"100",
+                "controlHeight":"100",
                 "textColor":"fff"
             }]
         }

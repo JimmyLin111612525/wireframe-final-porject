@@ -7,6 +7,7 @@ import { firestoreConnect } from 'react-redux-firebase';
 import {Modal,Button, Icon} from 'react-materialize';
 
 import WireframeLinks from './WireframeLinks'
+import { firestore } from 'firebase';
 
 class HomeScreen extends Component {
     state={
@@ -34,6 +35,23 @@ class HomeScreen extends Component {
         //console.log(id);
     }*/
 
+    handleNewWireframe=()=>{
+        var newWireframe={
+            name:'Unknown',
+            created:Date.now(),
+            wireframeWidth:700,
+            wireframeHeight:500,
+            controls:[]
+        }
+
+        var fireStore=getFirestore();
+        fireStore.collection('wireframes').add(newWireframe).then(doc=>{
+            this.setState({id:doc.id});
+        })
+
+
+    }
+
     render() {
         if (!this.props.auth.uid) {
             return <Redirect to="/login" />;
@@ -57,7 +75,7 @@ class HomeScreen extends Component {
                         </div>
                         
                         <div className="home_new_wireframe_container" style={{textAlign:'center',paddingTop:'20px'}}>
-                                <Button className="home_new_wireframe_button btn-large pink lighten-2 waves-effect waves-block waves-light z-depth-2" style={{width:'60%',height:'25%', fontSize:'20px'}} >
+                                <Button className="home_new_wireframe_button btn-large pink lighten-2 waves-effect waves-block waves-light z-depth-2" style={{width:'60%',height:'25%', fontSize:'20px'}} onClick={this.handleNewWireframe}>
                                     Create a New Wireframe
                                 </Button>
                         </div>
