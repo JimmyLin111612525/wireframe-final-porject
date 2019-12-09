@@ -197,3 +197,7 @@ html {
     right:0px;
     font-size: 10px;
   }
+
+  .wireframe-box{
+    position:relative;
+  }

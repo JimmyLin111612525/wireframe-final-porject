@@ -71,7 +71,10 @@ class WireframeScreen extends Component{
             positionX:'400',
             positionY:'400',
             controlWidth:'80',
-            controlHeight:'50',
+            controlHeight:'40',
+            text:'button',
+            fontSize:'10',
+            backgroundColor:'#03fca1',
             key:wireframe.controls.length+1
         }
         wireframe.controls.push(addButton);
@@ -83,10 +86,14 @@ class WireframeScreen extends Component{
         var wireframe=this.state.wireframe;
         var addTextField={
             name:'addTextField',
-            positionX:'400',
-            positionY:'400',
+            right:'0',
+            top:'0',
             controlWidth:'100',
             controlHeight:'20',
+            text:'input',
+            fontSize:'10',
+            color:'#000000',
+            backgroundColor:'#ffffff',
             key:wireframe.controls.length+1
         }
         wireframe.controls.push(addTextField);
@@ -103,7 +110,7 @@ class WireframeScreen extends Component{
             controlWidth:'100',
             controlHeight:'20',
             text:'Label',
-            color:'#000',
+            color:'#000000',
             key:wireframe.controls.length+1
         }
         wireframe.controls.push(addLabel);
@@ -180,7 +187,7 @@ class WireframeScreen extends Component{
                     </div>
                     
                     <div className="active-screen" style={{textAlign:'center'}}>
-                        <Wireframe wireframe={this.props.wireframe} width={this.props.wireframe.wireframeWidth} height={this.props.wireframe.wireframeHeight} wireframe={this.state.wireframe}>
+                        <Wireframe width={this.props.wireframe.wireframeWidth} height={this.props.wireframe.wireframeHeight} wireframe={this.state.wireframe}>
                             
                         </Wireframe>
                     </div>

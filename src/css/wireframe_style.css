@@ -34,6 +34,8 @@
     padding-top: 15%;
     padding-bottom: 15%;
   }
+
+  
   
   .home_new_wireframe_button {
     font-size: 32pt;
@@ -120,3 +122,12 @@
   .label-markup-text{
     color:white;
   }
+
+  .button-text-input{
+    color:white;
+  }
+
+  .button-font-input,.textfield-text-input,.textfield-font-input{
+    color:white;
+  }
+
