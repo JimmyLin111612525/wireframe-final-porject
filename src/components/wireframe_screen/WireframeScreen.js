@@ -18,9 +18,20 @@ class WireframeScreen extends Component{
         propertiesMarkUp:null,
         height:this.props.wireframe.wireframeHeight,
         width:this.props.wireframe.wireframeWidth,
-        props:null
+        props:null,
+        selected:null,
+        temp:null,
     }
     componentDidMount(){
+        document.addEventListener('keydown',(e)=>{
+            if(e.keyCode===46){
+                this.deleteControl();
+            }
+            else if(e.keyCode===32){
+                this.duplicateControl();
+            }
+        });
+
         var firestore=getFirestore();
         firestore.collection('wireframes').doc(this.props.wireframe.id).update({created:Date.now()});
     }
@@ -37,7 +48,31 @@ class WireframeScreen extends Component{
 
     }
 
-    
+    deleteControl=()=>{
+        console.log('delete control');
+        if(this.state.selected){
+            var wireframe=this.state.wireframe;
+            var index=wireframe.controls.indexOf(this.state.selected);
+            delete wireframe.controls[index];
+            this.setState({wireframe:wireframe,selected:null});
+        }
+    }
+
+    getSelected=(control)=>{
+        console.log('setting selected');
+        this.setState({selected:control,temp:control});
+    }
+
+    duplicateControl=()=>{
+        console.log('duplicate control');
+        if(this.state.selected){
+            var wireframe=this.state.wireframe;
+            var newControl=JSON.parse(JSON.stringify(this.state.selected));
+            newControl.key=wireframe.controls.length+1;
+            wireframe.controls.push(newControl);
+            this.setState({wireframe:wireframe});
+        }
+    }
 
     handleNameChange=(e)=>{
         this.setState({name:e.target.value});
@@ -210,7 +245,7 @@ class WireframeScreen extends Component{
                     </div>
                     
                     <div className="active-screen" style={{textAlign:'center'}}>
-                        <Wireframe width={this.props.wireframe.wireframeWidth} height={this.props.wireframe.wireframeHeight} wireframe={this.state.wireframe}>
+                        <Wireframe selected={this.state.selected} getSelected={this.getSelected} duplicateControl={this.duplicateControl} deleteControl={this.deleteControl} width={this.props.wireframe.wireframeWidth} height={this.props.wireframe.wireframeHeight} wireframe={this.state.wireframe}>
                             
                         </Wireframe>
                     </div>

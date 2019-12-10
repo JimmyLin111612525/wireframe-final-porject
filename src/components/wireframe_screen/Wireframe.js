@@ -13,22 +13,29 @@ class Wireframe extends Component{
         controls:this.props.wireframe.controls,
         index:null,
         selected:null,
+        duplicate:0,
     }
+
+    passUpSelected=(control)=>{
+        this.props.getSelected(control);
+    }
+
     deleteControl=(e)=>{
-            console.log('deleting controls');
         
             if(this.state.selected){
                 var controls=this.state.controls;
                 var id=`w${this.state.selected.key}`;
                 console.log(controls);
                 var index=controls.indexOf(this.state.selected);
-                
+                this.setState({selected:null});
                 //controls.splice(controls.indexOf(this.state.selected),1);
                 /*document.querySelector('.specific-props').innerHTML='';
                 var el=document.getElementById(id);*/
                 //console.log(el);
                 //el.parentElement.removeChild(el);
-                delete controls[index];
+                this.props.deleteControl(index);
+                //delete controls[index];
+
                 /*var newControls=[];
                 for(var i=0;i<controls.length;i++){
                     if(i!==index){
@@ -42,7 +49,7 @@ class Wireframe extends Component{
                         var thisID=`w${controls[i].key}`;
                         document.getElementById(thisID).style.transform=controls[i].trans;
                 }*/
-                this.setState({controls:controls, selected:null});
+                //this.setState({controls:controls, selected:null});
             }
         
     }
@@ -61,7 +68,8 @@ class Wireframe extends Component{
         var index=className.split('-')[1];
         console.log(index);
         var button=this.state.controls[index-1];
-        this.setState({index:index,selected:button});
+        this.setState({index:index});
+        this.passUpSelected(button);
         var text=button.text;
         console.log(text);
         var markup=
@@ -177,8 +185,8 @@ class Wireframe extends Component{
         var className=e.target.classList[0];
         var index=className.split('-')[1];
         var label=this.state.controls[index-1];
-        this.setState({index:index,selected:label});
-        
+        this.setState({index:index});
+        this.passUpSelected(label);
         console.log(index);
         console.log(this.state.controls[index-1]);
         var font=null;
@@ -223,7 +231,8 @@ class Wireframe extends Component{
         /*var coords=this.getCoords(e.target.style.transform);
         console.log(coords);*/
         var textfield=this.state.controls[index-1];
-        this.setState({index:index, selected:textfield});
+        this.setState({index:index});
+        this.passUpSelected(textfield);
         
         /*textfield.right=coords.x;
         textfield.top=coords.y;
@@ -330,7 +339,8 @@ class Wireframe extends Component{
         console.log(this.state.controls);
         var container=this.state.controls[index-1];
         controls[index-1].trans=trans
-        this.setState({controls:controls,index:index, selected:container});
+        this.setState({controls:controls,index:index});
+        this.passUpSelected(container);
         var markup=`
         <div class='container-markup'>
         <br></br>
@@ -396,12 +406,22 @@ class Wireframe extends Component{
         this.setState({controls:controls});
     }
 
-    render(){
-        document.addEventListener('keydown',(e)=>{
+    duplicateControl=()=>{
+        if(this.state.selected){
+            this.props.duplicateControl(this.state.selected);
+            //this.setState({duplicate:this.state.duplicate+1});
+        }
+    }
+
+render(){
+        /*document.addEventListener('keydown',(e)=>{
             if(e.keyCode===46){
                 this.deleteControl();
             }
-        });
+            else if(e.keyCode===32){
+                this.duplicateControl();
+            }
+        });*/
         var wireframeControls=this.state.controls;
         console.log(this.state.controls);
 
@@ -495,7 +515,7 @@ class Wireframe extends Component{
                             }
                             return(
                                 <Draggable bounds='parent'>
-                                    <div id={`w${control.key}`} className={`container-${control.key}`} style={styling4} onClick={this.showContainerProps}>
+                                    <div id={`w${control.key}`} className={`container-${control.key} container-control`} style={styling4} onClick={this.showContainerProps}>
 
                                     </div>
                                 </Draggable>
