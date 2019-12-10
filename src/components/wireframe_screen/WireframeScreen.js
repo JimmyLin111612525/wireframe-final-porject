@@ -37,9 +37,7 @@ class WireframeScreen extends Component{
 
     }
 
-    handleAddContainer=()=>{
-
-    }
+    
 
     handleNameChange=(e)=>{
         this.setState({name:e.target.value});
@@ -49,18 +47,38 @@ class WireframeScreen extends Component{
     }
 
     handleChangeHeight=(e)=>{
-        this.setState({height:e.target.value});
-        
+            this.setState({height:e.target.value});
     }
 
     handleChangeWidth=(e)=>{
-        this.setState({width:e.target.value});
-        
+            this.setState({width:e.target.value});
     }
 
     submitDimChanges=()=>{
-        var firestore=getFirestore();
-        firestore.collection('wireframes').doc(this.props.wireframe.id).update({wireframeHeight:this.state.height,wireframeWidth:this.state.width});
+        if(parseInt(this.state.height)>=1 && /^\d+$/.test(this.state.height) && parseInt(this.state.width)<=5000 && /^\d+$/.test(this.state.width)){
+            var firestore=getFirestore();
+            firestore.collection('wireframes').doc(this.props.wireframe.id).update({wireframeHeight:this.state.height,wireframeWidth:this.state.width});
+        }
+    }
+
+    handleAddContainer=()=>{
+        console.log('add container');
+        var wireframe=this.state.wireframe;
+        var addContainer={
+            name:'addContainer',
+            right:'0',
+            top:'0',
+            controlWidth:'100',
+            controlHeight:'100',
+            backgroundColor:'#ffffff',
+            borderStyle:'solid',
+            borderWidth:'4',
+            borderColor:'#000000',
+            borderRadius:'5',
+            key:wireframe.controls.length+1
+        }
+        wireframe.controls.push(addContainer);
+        this.setState({wireframe:wireframe});
     }
 
     handleAddButton=()=>{
@@ -68,13 +86,18 @@ class WireframeScreen extends Component{
         var wireframe=this.state.wireframe;
         var addButton={
             name:'addButton',
-            positionX:'400',
-            positionY:'400',
+            right:'0',
+            top:'0',
             controlWidth:'80',
             controlHeight:'40',
             text:'button',
             fontSize:'10',
             backgroundColor:'#03fca1',
+            borderStyle:'solid',
+            borderWidth:'3',
+            borderColor:'#ffffff',
+            borderRadius:'5',
+            color:'#000000',
             key:wireframe.controls.length+1
         }
         wireframe.controls.push(addButton);
@@ -104,8 +127,8 @@ class WireframeScreen extends Component{
         var wireframe=this.state.wireframe;
         var addLabel={
             name:'addLabel',
-            positionX:'400',
-            positionY:'400',
+            right:'0',
+            top:'0',
             fontSize:'10',
             controlWidth:'100',
             controlHeight:'20',
@@ -150,10 +173,10 @@ class WireframeScreen extends Component{
 
                     <div className="properties-list">
                         <span>Width: </span>
-                        <input type="text" class="width-textbox" pattern="[0-9]*" value={this.state.width} onChange={this.handleChangeWidth}/>
+                        <input type="text" class="width-textbox" value={this.state.width} onChange={this.handleChangeWidth}/>
                         <span>Height: </span>
                         <br></br>
-                        <input type="text" class="width-textbox" pattern="[0-9]*" value={this.state.height} onChange={this.handleChangeHeight}/>
+                        <input type="text" class="height-textbox" value={this.state.height} onChange={this.handleChangeHeight}/>
                         <br></br>
                         <Button style={{width:'60%',height:'5%', fontSize:'10px'}} onClick={this.submitDimChanges}>Update Dimensions</Button>
 

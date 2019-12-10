@@ -49,7 +49,7 @@
     top:30px;
     background-color:#0b325e;
     color: #fff;
-    height:650px;
+    height:750px;
     border-radius: 5px;
   }
 
@@ -110,7 +110,7 @@
     overflow:auto;
   }
 
-  .width-textbox{
+  .width-textbox,.height-textbox{
     color:white;
     width:5px;
   }
@@ -127,7 +127,7 @@
     color:white;
   }
 
-  .button-font-input,.textfield-text-input,.textfield-font-input{
+  .button-font-input,.textfield-text-input,.textfield-font-input,.button-border-width,.button-border-radius,.container-border-width-input,.container-border-radius-input{
     color:white;
   }
 
