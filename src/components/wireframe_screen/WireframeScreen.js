@@ -21,8 +21,27 @@ class WireframeScreen extends Component{
         props:null,
         selected:null,
         temp:null,
+        transX:0,
+        transY:0,
+        index:null,
     }
     componentDidMount(){
+        
+
+        var firestore=getFirestore();
+        firestore.collection('wireframes').doc(this.props.wireframe.id).update({created:Date.now()});
+    }
+    /*componentDidUpdate=()=>{
+        for(var i=0;i<this.state.wireframe.controls.length;i++){
+            var elms = document.querySelectorAll(`[id='w${this.state.wireframe.controls[i].key}']`);
+            if(elms.length>1){
+                for(var i = 0; i < elms.length-1; i++) 
+                elms[i].style.display='none';
+            }
+        }
+    }*/
+
+    /*componentDidMount(){
         document.addEventListener('keydown',(e)=>{
             if(e.keyCode===46){
                 this.deleteControl();
@@ -34,6 +53,39 @@ class WireframeScreen extends Component{
 
         var firestore=getFirestore();
         firestore.collection('wireframes').doc(this.props.wireframe.id).update({created:Date.now()});
+    }*/
+
+    fixedPosition=(index,left,top)=>{
+        var wf=this.state.wireframe;
+        var control=wf.controls[index-1];
+        control.left=parseInt(control.left)-left;
+        control.top=parseInt(control.top)-top;
+        wf.controls[index-1]=control;
+        this.setState({wireframe:wf});
+    }
+
+    handleTrans=(trans,index)=>{
+        var translateRemoved=trans.substring(trans.indexOf('translate(')+10);
+        var x=translateRemoved.substring(0,translateRemoved.indexOf('px'));
+        var split=translateRemoved.split(', ');
+        var y=split[1].substring(0,split[1].indexOf('px'));
+        var wireframe=this.state.wireframe;
+        console.log(translateRemoved);
+        console.log(x);
+        console.log(y);
+        console.log(wireframe.controls[index-1]);
+        var oLeft=parseInt(wireframe.controls[index-1].left);
+        var oTop=parseInt(wireframe.controls[index-1].top);
+        //var parsedX=parseInt(x)<0?0:parseInt(x);
+        //var parsedY=parseInt(y)<0?0:parseInt(y);
+        wireframe.controls[index-1].left=oLeft+parseInt(x);
+        wireframe.controls[index-1].top=oTop+parseInt(y);
+        //wireframe.controls[index-1].transX=x;
+        //wireframe.controls[index-1].transY=y;
+        wireframe.controls[index-1].transX=x;
+        wireframe.controls[index-1].transY=y;
+        this.setState({wireframe:wireframe,transX:x,transY:y});
+        //this.fixedPosition(index,parseInt(x),parseInt(y));
     }
 
     handleCloseEditScreen=()=>{
@@ -56,11 +108,13 @@ class WireframeScreen extends Component{
             delete wireframe.controls[index];
             this.setState({wireframe:wireframe,selected:null});
         }
+        document.querySelector('.specific-props').innerHTML='';
     }
 
     getSelected=(control)=>{
         console.log('setting selected');
-        this.setState({selected:control,temp:control});
+        console.log(this.state.wireframe.controls.indexOf(control));
+        this.setState({selected:control,temp:control,index:this.state.wireframe.controls.indexOf(control)});
     }
 
     duplicateControl=()=>{
@@ -101,7 +155,7 @@ class WireframeScreen extends Component{
         var wireframe=this.state.wireframe;
         var addContainer={
             name:'addContainer',
-            right:'0',
+            left:'0',
             top:'0',
             controlWidth:'100',
             controlHeight:'100',
@@ -110,18 +164,20 @@ class WireframeScreen extends Component{
             borderWidth:'4',
             borderColor:'#000000',
             borderRadius:'5',
-            key:wireframe.controls.length+1
+            key:wireframe.controls.length+1,
+            deleted:false,
         }
         wireframe.controls.push(addContainer);
         this.setState({wireframe:wireframe});
     }
 
     handleAddButton=()=>{
+        
         console.log('add button');
         var wireframe=this.state.wireframe;
         var addButton={
             name:'addButton',
-            right:'0',
+            left:'0',
             top:'0',
             controlWidth:'80',
             controlHeight:'40',
@@ -133,18 +189,33 @@ class WireframeScreen extends Component{
             borderColor:'#ffffff',
             borderRadius:'5',
             color:'#000000',
-            key:wireframe.controls.length+1
+            key:wireframe.controls.length+1,
+            transX:'0',
+            transY:'0',
         }
+
         wireframe.controls.push(addButton);
         console.log(wireframe);
         this.setState({wireframe:wireframe});
     }
 
+    handleSave=()=>{
+        /*var wireframe=this.state.wireframe;
+        for(var i=0;i<wireframe.controls.length;i++){
+            wireframe.controls[i].left=wireframe.controls[i].transX;
+            wireframe.controls[i].top=wireframe.controls[i].transY;
+        }
+        var firestore=getFirestore();
+        firestore.collection('wireframes').doc(wireframe.id).update({controls:wireframe.controls});*/
+        console.log('save triggered. implement save you dumbass.')
+    }
+    
+
     handleAddTextField=()=>{
         var wireframe=this.state.wireframe;
         var addTextField={
             name:'addTextField',
-            right:'0',
+            left:'0',
             top:'0',
             controlWidth:'100',
             controlHeight:'20',
@@ -152,7 +223,9 @@ class WireframeScreen extends Component{
             fontSize:'10',
             color:'#000000',
             backgroundColor:'#ffffff',
-            key:wireframe.controls.length+1
+            key:wireframe.controls.length+1,
+            transX:'0',
+            transY:'0',
         }
         wireframe.controls.push(addTextField);
         this.setState({wireframe:wireframe});
@@ -162,21 +235,31 @@ class WireframeScreen extends Component{
         var wireframe=this.state.wireframe;
         var addLabel={
             name:'addLabel',
-            right:'0',
-            top:'0',
+            left:0,
+            top:0,
             fontSize:'10',
             controlWidth:'100',
             controlHeight:'20',
             text:'Label',
             color:'#000000',
-            key:wireframe.controls.length+1
+            key:wireframe.controls.length+1,
+            transX:'0',
+            transY:'0',
         }
         wireframe.controls.push(addLabel);
         this.setState({wireframe:wireframe});
     }
 
     render(){
-        
+        for(var i=0;i<this.state.wireframe.controls.length;i++){
+            if(this.state.wireframe.controls.length>0){
+                var elms = document.querySelectorAll(`[id='w${this.state.wireframe.controls[i].key}']`);
+                if(elms.length>1){
+                    for(var i = 0; i < elms.length-1; i++) 
+                    elms[i].style.display='none';
+                }
+            }
+        }
         
         const dragHandlers={onStart:this.onStart, onStop:this.onStop};
         const xCoord=this.state.xCoord;
@@ -221,7 +304,7 @@ class WireframeScreen extends Component{
                     </div>
 
                     <div className="edit-save-close">
-                        <Button className="save-button green hoverable" style={{fontSize:'7px',height:'15px'}}>
+                        <Button className="save-button green hoverable" style={{fontSize:'7px',height:'15px'}} onClick={this.handleSave}>
                         </Button>
                         <Button className="close-button red darken-2 hoverable" onClick={this.handleCloseEditScreen} style={{fontSize:'7px',height:'15px'}}>
                         </Button>
@@ -245,7 +328,7 @@ class WireframeScreen extends Component{
                     </div>
                     
                     <div className="active-screen" style={{textAlign:'center'}}>
-                        <Wireframe selected={this.state.selected} getSelected={this.getSelected} duplicateControl={this.duplicateControl} deleteControl={this.deleteControl} width={this.props.wireframe.wireframeWidth} height={this.props.wireframe.wireframeHeight} wireframe={this.state.wireframe}>
+                        <Wireframe index={this.state.index} handleTrans={this.handleTrans} selected={this.state.selected} getSelected={this.getSelected} duplicateControl={this.duplicateControl} deleteControl={this.deleteControl} width={this.props.wireframe.wireframeWidth} height={this.props.wireframe.wireframeHeight} wireframe={this.state.wireframe}>
                             
                         </Wireframe>
                     </div>

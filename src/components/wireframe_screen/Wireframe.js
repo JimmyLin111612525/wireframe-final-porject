@@ -6,7 +6,7 @@ import { firestoreConnect } from 'react-redux-firebase';
 import { getFirestore } from 'redux-firestore';
 import {Modal,Button, Icon} from 'react-materialize';
 import Draggable from 'react-draggable';
-import Rnd from 'react-rnd';
+import {Rnd} from 'react-rnd';
 
 class Wireframe extends Component{
     state={
@@ -14,62 +14,87 @@ class Wireframe extends Component{
         index:null,
         selected:null,
         duplicate:0,
+        position:{x:100,y:100},
+        key:0,
     }
 
-    passUpSelected=(control)=>{
-        this.props.getSelected(control);
-    }
-
-    deleteControl=(e)=>{
-        
-            if(this.state.selected){
-                var controls=this.state.controls;
-                var id=`w${this.state.selected.key}`;
-                console.log(controls);
-                var index=controls.indexOf(this.state.selected);
-                this.setState({selected:null});
-                //controls.splice(controls.indexOf(this.state.selected),1);
-                /*document.querySelector('.specific-props').innerHTML='';
-                var el=document.getElementById(id);*/
-                //console.log(el);
-                //el.parentElement.removeChild(el);
-                this.props.deleteControl(index);
-                //delete controls[index];
-
-                /*var newControls=[];
-                for(var i=0;i<controls.length;i++){
-                    if(i!==index){
-                        controls[i].key=i+1;
-                        newControls.push(controls[i]);
-                    }
-                }*/
-                /*console.log(controls);
-                controls.splice(index,1);
-                for(var i=0;i<controls.length;i++){
-                        var thisID=`w${controls[i].key}`;
-                        document.getElementById(thisID).style.transform=controls[i].trans;
-                }*/
-                //this.setState({controls:controls, selected:null});
+    componentDidMount=()=>{
+        document.addEventListener('keydown',(e)=>{
+            if(e.keyCode===46){
+                this.deleteControl();
             }
-        
+            else if(e.ctrlKey && e.keyCode===68){
+                this.duplicateControl();
+            }
+        });
+    }
+
+    deleteControl=()=>{
+        console.log('delete control');
+        if(this.state.selected){
+            var controls=this.state.controls;
+            var index=controls.indexOf(this.state.selected);
+            controls[index].deleted=true;
+            this.setState({controls:controls,selected:null});
+        }
+        document.querySelector('.specific-props').innerHTML='';
+    }
+
+    handleTrans=(trans,index)=>{
+        var translateRemoved=trans.substring(trans.indexOf('translate(')+10);
+        var x=translateRemoved.substring(0,translateRemoved.indexOf('px'));
+        var split=translateRemoved.split(', ');
+        var y=split[1].substring(0,split[1].indexOf('px'));
+        var controls=this.state.controls;
+        console.log(translateRemoved);
+        console.log(x);
+        console.log(y);
+        console.log(controls[index-1]);
+        var oLeft=parseInt(controls[index-1].left);
+        var oTop=parseInt(controls[index-1].top);
+        //var parsedX=parseInt(x)<0?0:parseInt(x);
+        //var parsedY=parseInt(y)<0?0:parseInt(y);
+        controls[index-1].left=oLeft+parseInt(x);
+        controls[index-1].top=oTop+parseInt(y);
+        //wireframe.controls[index-1].transX=x;
+        //wireframe.controls[index-1].transY=y;
+        return controls;
+        //this.fixedPosition(index,parseInt(x),parseInt(y));
     }
 
     deselectControls=(e)=>{
-        console.log('deselecting controls!');
-        document.querySelector('.specific-props').innerHTML='';
-        this.setState({selected:null});
+        console.log(e.target);
+        if(e.target.classList[0]==='wireframe-box'){
+            console.log('deselecting controls!');
+            document.querySelector('.specific-props').innerHTML='';
+            this.setState({selected:null});
+        }
     }
 
     showButtonProps=(e)=>{
         e.stopPropagation();
+
+        for(var i=0;i<this.state.controls.length;i++){
+            if(this.state.controls.length>0){
+                var elms = document.querySelectorAll(`[id='w${this.state.controls[i].key}']`);
+                if(elms.length>1){
+                    for(var i = 0; i < elms.length-1; i++) 
+                    elms[i].parentElement.removeChild(elms[i]);
+                }
+            }
+        }        
+
         document.querySelector('.specific-props').innerHTML='';
+        var trans=e.target.style.transform;
+        //e.target.style.transform=`translate(0px, 0px)`;
+        console.log(e.target);
+        //console.log(trans);
         console.log(e.target.classList[0]);
         var className=e.target.classList[0];
         var index=className.split('-')[1];
+        var controls=this.handleTrans(trans,index);
         console.log(index);
         var button=this.state.controls[index-1];
-        this.setState({index:index});
-        this.passUpSelected(button);
         var text=button.text;
         console.log(text);
         var markup=
@@ -134,6 +159,7 @@ class Wireframe extends Component{
         document.querySelector('.button-border-radius').addEventListener('change',this.handleButtonRadiusChange);
         document.querySelector('.button-border-color-picker').addEventListener('change',this.handleButtonBorderColor);
         document.querySelector('.button-text-color-picker').addEventListener('change', this.handleButtonTextColor);
+        this.setState({controls:controls,index:index,key:this.state.key+1,selected:button});
     }
 
     handleButtonTextColor=()=>{
@@ -179,16 +205,29 @@ class Wireframe extends Component{
     }
 
     showLabelProps=(e)=>{
+
+        for(var i=0;i<this.state.controls.length;i++){
+            if(this.state.controls.length>0){
+                var elms = document.querySelectorAll(`[id='w${this.state.controls[i].key}']`);
+                if(elms.length>1){
+                    for(var i = 0; i < elms.length-1; i++) 
+                    elms[i].parentElement.removeChild(elms[i]);
+                }
+            }
+        }
+
         e.stopPropagation();
         document.querySelector('.specific-props').innerHTML='';
+        var trans=e.target.style.transform;
         console.log(console.log(e.target.classList[0]));
         var className=e.target.classList[0];
         var index=className.split('-')[1];
         var label=this.state.controls[index-1];
-        this.setState({index:index});
-        this.passUpSelected(label);
+        var controls=this.handleTrans(trans,index);
+
         console.log(index);
         console.log(this.state.controls[index-1]);
+
         var font=null;
         var markup=
         `<div class='label-markup'>
@@ -216,24 +255,34 @@ class Wireframe extends Component{
         document.querySelector('.label-markup-input').addEventListener('change',this.handleLabelFontChange);
         document.querySelector('.label-markup-text').addEventListener('change',this.handleLabelTextChange);
         document.querySelector('.label-color-picker').addEventListener('change',this.handleLabelColorPicker);
+        this.setState({controls:controls,index:index,key:this.state.key+1,selected:label});
     }
 
     showTextfieldProps=(e)=>{
         e.stopPropagation();
         
+        for(var i=0;i<this.state.controls.length;i++){
+            if(this.state.controls.length>0){
+                var elms = document.querySelectorAll(`[id='w${this.state.controls[i].key}']`);
+                if(elms.length>1){
+                    for(var i = 0; i < elms.length-1; i++) 
+                    elms[i].parentElement.removeChild(elms[i]);
+                }
+            }
+        }
+
+
         document.querySelector('.specific-props').innerHTML='';
         console.log(e.target.classList);
         var className=e.target.classList[0];
         console.log(className);
+        console.log(e.target);
         var index=className.split('-')[1];
         console.log(this.state.controls);
-        var controls=this.state.controls;
+        var controls=this.handleTrans(e.target.style.transform,index);
         /*var coords=this.getCoords(e.target.style.transform);
         console.log(coords);*/
         var textfield=this.state.controls[index-1];
-        this.setState({index:index});
-        this.passUpSelected(textfield);
-        
         /*textfield.right=coords.x;
         textfield.top=coords.y;
         controls[index-1]=textfield;
@@ -272,6 +321,7 @@ class Wireframe extends Component{
         document.querySelector('.textfield-font-input').addEventListener('change',this.handleTextfieldFontChange);
         document.querySelector('.textfield-text-color-picker').addEventListener('change',this.handleTextfieldTextColor);
         document.querySelector('.textfield-bg-color-picker').addEventListener('change',this.handleTextfieldBGColor);
+        this.setState({controls:controls,index:index, key:this.state.key+1,selected:textfield});
     }
 
     getCoords=(translate)=>{
@@ -329,6 +379,18 @@ class Wireframe extends Component{
 
     showContainerProps=(e)=>{
         e.stopPropagation();
+
+        if(e.target.classList[0]!=='resizer'){
+            for(var i=0;i<this.state.controls.length;i++){
+            if(this.state.controls.length>0){
+                var elms = document.querySelectorAll(`[id='w${this.state.controls[i].key}']`);
+                if(elms.length>1){
+                    for(var i = 0; i < elms.length-1; i++) 
+                    elms[i].parentElement.removeChild(elms[i]);
+                }
+            }
+        }
+
         var controls=this.state.controls;
         var trans=e.target.style.transform;
         document.querySelector('.specific-props').innerHTML='';
@@ -336,11 +398,10 @@ class Wireframe extends Component{
         var className=e.target.classList[0];
         console.log(className);
         var index=className.split('-')[1];
+        var controls=this.handleTrans(trans,index);
         console.log(this.state.controls);
         var container=this.state.controls[index-1];
-        controls[index-1].trans=trans
-        this.setState({controls:controls,index:index});
-        this.passUpSelected(container);
+        
         var markup=`
         <div class='container-markup'>
         <br></br>
@@ -380,6 +441,7 @@ class Wireframe extends Component{
         document.querySelector('.container-border-width-input').addEventListener('change', this.handleContainerBorderWidth);
         document.querySelector('.container-border-radius-input').addEventListener('change',this.handleContainerBorderRadius);
         document.querySelector('.container-border-color-input').addEventListener('change',this.handleContainerBorderColor);
+        this.setState({controls:controls,index:index,key:this.state.key+1,selected:container});}
     }
 
     handleContainerBorderColor=()=>{
@@ -408,20 +470,135 @@ class Wireframe extends Component{
 
     duplicateControl=()=>{
         if(this.state.selected){
-            this.props.duplicateControl(this.state.selected);
-            //this.setState({duplicate:this.state.duplicate+1});
+            console.log(this.state.selected);
+            var controls=this.state.controls;
+            var newControl=JSON.parse(JSON.stringify(this.state.selected));
+            console.log(newControl);
+            newControl.key=controls.length+1;
+            newControl.left=this.state.selected.left+100;
+            newControl.top=this.state.selected.top-100;
+            newControl.controlWidth=this.state.selected.controlWidth;
+            newControl.controlHeight=this.state.selected.controlHeight;
+            console.log(newControl);
+            controls.push(newControl);
+            this.setState({controls:controls});
         }
     }
 
+    updateDim=(e)=>{
+        var parent=e.target.parentElement;
+        console.log(e.target.parentElement);
+    }
+
+    onDragStop=(e,d)=>{
+        e.stopPropagation();
+        var controls=this.state.controls;
+        console.log(e.target.classList);
+        var className=e.target.classList[0];
+        console.log(className);
+        var index=className.split('-')[1];
+        var container=controls[index-1];
+        controls[index-1].left=d.x;
+        controls[index-1].top=d.y;
+
+        var markup=`
+        <div class='container-markup'>
+        <br></br>
+            <span class='container-color'>
+                Background color:
+            </span>
+            <input type='color' class='container-color-picker' value='${container.backgroundColor}'>
+            <br></br>
+            <span class='container-border-width'>
+                Border width:
+            </span>
+            <input type='text' class='container-border-width-input' value='${container.borderWidth}' onkeydown="return ( event.ctrlKey || event.altKey 
+                || (47<event.keyCode && event.keyCode<58 && event.shiftKey==false) 
+                || (95<event.keyCode && event.keyCode<106)
+                || (event.keyCode==8) || (event.keyCode==9) 
+                || (event.keyCode>34 && event.keyCode<40) 
+                || (event.keyCode==46) ||(event.keyCode==13))">
+            <br></br>
+            <span class='container-border-radius'>
+                Border radius;
+            </span>
+            <input type='text' class='container-border-radius-input' value='${container.borderRadius}' onkeydown="return ( event.ctrlKey || event.altKey 
+                || (47<event.keyCode && event.keyCode<58 && event.shiftKey==false) 
+                || (95<event.keyCode && event.keyCode<106)
+                || (event.keyCode==8) || (event.keyCode==9) 
+                || (event.keyCode>34 && event.keyCode<40) 
+                || (event.keyCode==46) ||(event.keyCode==13))">
+            <br></br>
+            <span class='container-border-color'>
+                Border color:
+            </span>
+            <input type='color' class='container-border-color-input' value='${container.borderColor}'>
+        </div>
+        `;
+        document.querySelector('.specific-props').innerHTML=markup;
+        document.querySelector('.container-color-picker').addEventListener('change',this.handleContainerColor);
+        document.querySelector('.container-border-width-input').addEventListener('change', this.handleContainerBorderWidth);
+        document.querySelector('.container-border-radius-input').addEventListener('change',this.handleContainerBorderRadius);
+        document.querySelector('.container-border-color-input').addEventListener('change',this.handleContainerBorderColor);
+
+        this.setState({controls:controls,index:index,selected:container});
+    }
+
+    onResizeStop=(e, direction, ref, delta, position,key)=>{
+        e.stopPropagation();
+        var controls=this.state.controls;
+        console.log(key)
+        controls[key-1].controlWidth=parseInt(controls[key-1].controlWidth)+parseInt(delta.width);
+        controls[key-1].controlHeight=parseInt(controls[key-1].controlHeight)+parseInt(delta.height);
+        console.log(position);
+        var index=key;
+        var container=controls[key-1];
+        var markup=`
+        <div class='container-markup'>
+        <br></br>
+            <span class='container-color'>
+                Background color:
+            </span>
+            <input type='color' class='container-color-picker' value='${container.backgroundColor}'>
+            <br></br>
+            <span class='container-border-width'>
+                Border width:
+            </span>
+            <input type='text' class='container-border-width-input' value='${container.borderWidth}' onkeydown="return ( event.ctrlKey || event.altKey 
+                || (47<event.keyCode && event.keyCode<58 && event.shiftKey==false) 
+                || (95<event.keyCode && event.keyCode<106)
+                || (event.keyCode==8) || (event.keyCode==9) 
+                || (event.keyCode>34 && event.keyCode<40) 
+                || (event.keyCode==46) ||(event.keyCode==13))">
+            <br></br>
+            <span class='container-border-radius'>
+                Border radius;
+            </span>
+            <input type='text' class='container-border-radius-input' value='${container.borderRadius}' onkeydown="return ( event.ctrlKey || event.altKey 
+                || (47<event.keyCode && event.keyCode<58 && event.shiftKey==false) 
+                || (95<event.keyCode && event.keyCode<106)
+                || (event.keyCode==8) || (event.keyCode==9) 
+                || (event.keyCode>34 && event.keyCode<40) 
+                || (event.keyCode==46) ||(event.keyCode==13))">
+            <br></br>
+            <span class='container-border-color'>
+                Border color:
+            </span>
+            <input type='color' class='container-border-color-input' value='${container.borderColor}'>
+        </div>
+        `;
+        document.querySelector('.specific-props').innerHTML=markup;
+        document.querySelector('.container-color-picker').addEventListener('change',this.handleContainerColor);
+        document.querySelector('.container-border-width-input').addEventListener('change', this.handleContainerBorderWidth);
+        document.querySelector('.container-border-radius-input').addEventListener('change',this.handleContainerBorderRadius);
+        document.querySelector('.container-border-color-input').addEventListener('change',this.handleContainerBorderColor);
+
+        this.setState({controls:controls,index:index,selected:container});
+    }
+
 render(){
-        /*document.addEventListener('keydown',(e)=>{
-            if(e.keyCode===46){
-                this.deleteControl();
-            }
-            else if(e.keyCode===32){
-                this.duplicateControl();
-            }
-        });*/
+    var key=this.state.key;
+        console.log(this.props.wireframe);
         var wireframeControls=this.state.controls;
         console.log(this.state.controls);
 
@@ -435,13 +612,14 @@ render(){
             borderRadius:'5px'
         }
         return(
-            <div className='wireframe-box' style={styling} onClick={this.deselectControls}>
+            <div className='wireframe-box' onClick={this.deselectControls} style={styling} >
                 {wireframeControls.map(control=>{
+                    key++;
                         if(control.name==='addButton' && control){
                             var styling1=
                             {position:'absolute',
                                 zIndex:'99',
-                                right:`${control.right}px`,
+                                left:`${control.left}px`,
                                 top:`${control.top}px`,
                                 width:`${control.controlWidth}px`,
                                 height:`${control.controlHeight}px`,
@@ -456,7 +634,7 @@ render(){
                                 color:`${control.color}`,
                             }
                             return (
-                                <Draggable  bounds='parent'>
+                                <Draggable key={new Date().getTime()} bounds='parent'>
                                     <button id={`w${control.key}`} className={`button-${control.key} button-control`} style={styling1} onClick={this.showButtonProps}>{control.text}</button>
                                 </Draggable>
                             )
@@ -466,7 +644,7 @@ render(){
                             {
                                 position:'absolute',
                                 zIndex:'99',
-                                right:`${control.right}px`,
+                                left:`${control.left}px`,
                                 top:`${control.top}px`,
                                 width:`${control.controlWidth}px`,
                                 height:`${control.controlHeight}px`,
@@ -475,7 +653,7 @@ render(){
                                 fontSize:this.state.controls?(this.state.controls[control.key-1]?`${this.state.controls[control.key-1].fontSize}px`:`${control.fontSize}px`):`${control.fontSize}px`,
                             }
                             return(
-                                <Draggable  bounds='parent'>
+                                <Draggable key={new Date().getTime()} bounds='parent'>
                                     <input id={`w${control.key}`} className={`input-${control.key} input-control`} type="text" onClick={this.showTextfieldProps} value={this.state.controls?(this.state.controls[control.key-1]?`${this.state.controls[control.key-1].text}`:`${control.text}`):`${control.text}`} style={styling2} onClick={this.showTextfieldProps}/>
                                 </Draggable>
                                 
@@ -486,7 +664,7 @@ render(){
                             var styling3={
                                 position:'absolute',
                                 zIndex:'99',
-                                right:`${control.right}px`,
+                                left:`${control.left}px`,
                                 top:`${control.top}px`,
                                 //width:`${control.controlWidth}px`,
                                 fontSize:this.state.controls?(this.state.controls[control.key-1]?`${this.state.controls[control.key-1].fontSize}px`:`${control.fontSize}px`):`${control.fontSize}px`,//`${control.fontSize}px`,
@@ -494,15 +672,15 @@ render(){
                                 color:this.state.controls?(this.state.controls[control.key-1]?`${this.state.controls[control.key-1].color}`:`${control.color}`):`${control.color}`
                             }
                             return(
-                                <Draggable bounds='parent'>
+                                <Draggable key={new Date().getTime()} bounds='parent'>
                                     <p id={`w${control.key}`} className={`label-${control.key}`} style={styling3} onClick={this.showLabelProps}>{`${control.text}`}</p>
                                 </Draggable>
                                 
                             )
-                        }else if(control.name==='addContainer' && control){
-                            var styling4={
+                        }else if(control.name==='addContainer' && !control.deleted){
+                            /*var styling4={
                                 position:'absolute',
-                                right:`${control.right}px`,
+                                left:`${control.left}px`,
                                 top:`${control.top}px`,
                                 width:`${control.controlWidth}px`,
                                 height:`${control.controlHeight}px`,
@@ -512,15 +690,24 @@ render(){
                                 borderColor:`${control.borderColor}`,
                                 borderRadius:`${control.borderRadius}px`,
                                 zIndex:'1',
-                            }
+                            }*/
+                            var styling4={backgroundColor:`${control.backgroundColor}`,
+                            borderStyle:`${control.borderStyle}`,
+                            borderWidth:`${control.borderWidth}px`,
+                            borderColor:`${control.borderColor}`,
+                            borderRadius:`${control.borderRadius}px`,
+                            zIndex:'99',}
                             return(
-                                <Draggable bounds='parent'>
-                                    <div id={`w${control.key}`} className={`container-${control.key} container-control`} style={styling4} onClick={this.showContainerProps}>
-
+                                <Rnd
+                                id={`w${control.key}`} className={`container-${control.key} container-control`}
+                                default={{width:control.controlWidth,height:control.controlHeight}} position={{x:control.left,y:control.top}} onDragStop={this.onDragStop} onResizeStop={(e, direction, ref, delta, position)=>this.onResizeStop(e, direction, ref, delta, position,control.key)} bounds='parent' style={styling4}>
+                                    <div >
+                                      
                                     </div>
-                                </Draggable>
+                                </Rnd>
                             )
                         }
+                        
                     })}
             </div>
         )
@@ -528,3 +715,11 @@ render(){
 }
 
 export default Wireframe;
+
+/*
+<Draggable key={new Date().getTime()} bounds='parent'>
+                                    <div id={`w${control.key}`} className={`container-${control.key} container-control`} style={styling4} onClick={this.showContainerProps}>
+                                      
+                                    </div>
+                                </Draggable>
+*/
