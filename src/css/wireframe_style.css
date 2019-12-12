@@ -132,3 +132,14 @@
   }
 
   .resizer { width: 10px; height: 10px; background: blue; position:absolute; right: 0; bottom: 0; cursor: se-resize; }
+
+  .button-control,.input-control{
+    word-wrap: break-word;
+    align-items: center;
+
+  }
+
+  .button-control:active{
+    /*filter:brightness(85%);*/
+    opacity: 50%;
+  }
