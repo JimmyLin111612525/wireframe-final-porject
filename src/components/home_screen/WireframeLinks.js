@@ -40,13 +40,14 @@ class WireframeLinks extends React.Component {
 
     render() {
         
-        var wireframes = this.props.wireframes;
+        var wireframesOrig = this.props.wireframes;
         console.log(this.props.wireframes);
         /*if(this.state.todoLists!==null){
             todoLists=this.state.todoLists;
         }*/
         //this.setLists(todoLists);
-        if(wireframes!==undefined){
+        if(wireframesOrig!==undefined){
+            var wireframes=wireframesOrig.filter(wf=>{if(wf.userId===this.props.userId){return wf}});
             wireframes.sort(function(a,b){
                 console.log(a.created,b.created,typeof(a.created));
                 if(a.created>b.created){
@@ -78,6 +79,7 @@ const mapStateToProps = (state) => {
     return {
         wireframes: state.firestore.ordered.wireframes,
         auth: state.firebase.auth,
+        userId: state.firebase.auth.uid,
     };
 };
 

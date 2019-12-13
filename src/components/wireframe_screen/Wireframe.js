@@ -17,6 +17,7 @@ class Wireframe extends Component{
         position:{x:100,y:100},
         key:0,
         dragging:null,
+        zoomStyle:1
     }
 
     componentDidMount=()=>{
@@ -33,6 +34,11 @@ class Wireframe extends Component{
         });
     }
 
+    ZoomIn=()=>{
+        console.log('zoom in');
+        this.setState({zoomStyle:this.state.zoomStyle*2});
+    }
+
     save=()=>{
         var firestore=getFirestore();
         var controls=this.state.controls;
@@ -42,7 +48,7 @@ class Wireframe extends Component{
             }
         }
         document.querySelector('.specific-props').innerHTML='';
-        firestore.collection('wireframes').doc(this.props.wireframe.id).update({controls:controls})
+        firestore.collection('wireframes').doc(this.props.wireframe.id).update({name:document.querySelector('.wireframe-name-input').value,controls:controls,wireframeWidth:this.props.wireframe.wireframeWidth,wireframeHeight:this.props.wireframe.wireframeHeight}).then(window.alert('Changes saved!'));
     }
 
     deleteControl=()=>{
@@ -717,7 +723,11 @@ class Wireframe extends Component{
         this.setState({dragging:this.state.controls[key-1]})
     }
 
+
+    
 render(){
+    var zoomStyle=this.state.zoomStyle
+
     var key=this.state.key;
         console.log(this.props.wireframe);
         var wireframeControls=this.state.controls;
@@ -730,12 +740,13 @@ render(){
             borderColor:'black',
             borderWidth:'0.5px',
             borderStyle:'solid',
-            borderRadius:'5px'
+            borderRadius:'5px',
         }
         return(
             <div className='wireframe-box' onClick={this.deselectControls} style={styling} >
                 {wireframeControls.map(control=>{
-                    key++;
+                    console.log(control);
+                    console.log(control.name, typeof(control.deleted));
                         if(control.name==='addButton' && !control.deleted){
                             var styling1={
                                 position:'absolute',
@@ -787,7 +798,7 @@ render(){
                             )
                         }
                         if(control.name==='addTextField'  && !control.deleted){
-
+                            console.log("inhere");
                             var selected='';
                             var nwBox=
                             <div class='nwBox' style={{width:'10px', height:'10px',background:'blue',position:'absolute',left:'0',top:'0'}}>

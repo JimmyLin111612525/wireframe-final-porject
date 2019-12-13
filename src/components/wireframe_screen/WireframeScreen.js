@@ -24,36 +24,12 @@ class WireframeScreen extends Component{
         transX:0,
         transY:0,
         index:null,
+        zoomStyle:null,
     }
     componentDidMount(){
-        
-
         var firestore=getFirestore();
         firestore.collection('wireframes').doc(this.props.wireframe.id).update({created:Date.now()});
     }
-    /*componentDidUpdate=()=>{
-        for(var i=0;i<this.state.wireframe.controls.length;i++){
-            var elms = document.querySelectorAll(`[id='w${this.state.wireframe.controls[i].key}']`);
-            if(elms.length>1){
-                for(var i = 0; i < elms.length-1; i++) 
-                elms[i].style.display='none';
-            }
-        }
-    }*/
-
-    /*componentDidMount(){
-        document.addEventListener('keydown',(e)=>{
-            if(e.keyCode===46){
-                this.deleteControl();
-            }
-            else if(e.keyCode===32){
-                this.duplicateControl();
-            }
-        });
-
-        var firestore=getFirestore();
-        firestore.collection('wireframes').doc(this.props.wireframe.id).update({created:Date.now()});
-    }*/
 
     fixedPosition=(index,left,top)=>{
         var wf=this.state.wireframe;
@@ -89,7 +65,11 @@ class WireframeScreen extends Component{
     }
 
     handleCloseEditScreen=()=>{
-        this.setState({close:true});
+        var close=false;
+        if(window.confirm('Aer you sure you want to close this screen? Unsaved changes will not be saved!')){
+            close=true;
+        }
+        this.setState({close:close});
     }
 
     onStop=(e,ui)=>{
@@ -131,8 +111,6 @@ class WireframeScreen extends Component{
     handleNameChange=(e)=>{
         this.setState({name:e.target.value});
         var name=(e.target.value.trim()===''?'Unknown':e.target.value.trim());
-        var firestore=getFirestore();
-        firestore.collection('wireframes').doc(this.props.wireframe.id).update({name:name});
     }
 
     handleChangeHeight=(e)=>{
@@ -144,9 +122,12 @@ class WireframeScreen extends Component{
     }
 
     submitDimChanges=()=>{
+        console.log(this.props.wireframe);
         if(parseInt(this.state.height)>=1 && /^\d+$/.test(this.state.height) && parseInt(this.state.width)<=5000 && /^\d+$/.test(this.state.width)){
-            var firestore=getFirestore();
-            firestore.collection('wireframes').doc(this.props.wireframe.id).update({wireframeHeight:this.state.height,wireframeWidth:this.state.width});
+            var wireframe=this.props.wireframe;
+            wireframe.wireframeWidth=this.state.width;
+            wireframe.wireframeHeight=this.state.height;
+            this.setState({wireframe:wireframe});
         }
     }
 
@@ -191,10 +172,8 @@ class WireframeScreen extends Component{
             borderRadius:'5',
             color:'#000000',
             key:wireframe.controls.length+1,
-            transX:'0',
-            transY:'0',
             deleted:false,
-            selected:true,
+            selected:false,
         }
 
         wireframe.controls.push(addButton);
@@ -227,8 +206,6 @@ class WireframeScreen extends Component{
             color:'#000000',
             backgroundColor:'#ffffff',
             key:wireframe.controls.length+1,
-            transX:'0',
-            transY:'0',
             deleted:false,
             selected:false,
         }
@@ -248,8 +225,6 @@ class WireframeScreen extends Component{
             text:'Label',
             color:'#000000',
             key:wireframe.controls.length+1,
-            transX:'0',
-            transY:'0',
             deleted:false,
             selected:false,
         }
@@ -258,7 +233,7 @@ class WireframeScreen extends Component{
     }
 
     handleZoomIn=()=>{
-        console.log('zoom in');
+        
     }
 
     render(){
@@ -283,17 +258,17 @@ class WireframeScreen extends Component{
             return <Redirect to='/'/>
         }
 
-        var zoomStyle=null;
+        
         return(
             
             <div>
                 <div className="wireframe-name">
                     <span>Name:</span>
-                    <input type='text' value={this.state.name} onChange={this.handleNameChange}/>
+                    <input type='text' className="wireframe-name-input" value={this.state.name} onChange={this.handleNameChange}/>
                 </div>
                 <div className='edit-container z-depth-3'>
                     <div className="zoom-container">
-                        <i className="material-icons zoom-in waves-effect waves-light" onClick={this.handleZoomIn}>zoom_in</i>
+                        <i className="material-icons zoom-in waves-effect waves-light">zoom_in</i>
                         <i className="material-icons zoom-out waves-effect waves-light">zoom_out</i>
                     </div>
                     <div className="properties-container">

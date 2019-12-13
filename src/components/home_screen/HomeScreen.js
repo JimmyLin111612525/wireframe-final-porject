@@ -41,7 +41,8 @@ class HomeScreen extends Component {
             created:Date.now(),
             wireframeWidth:700,
             wireframeHeight:500,
-            controls:[]
+            controls:[],
+            userId:this.props.userId,
         }
 
         var fireStore=getFirestore();
@@ -89,7 +90,7 @@ class HomeScreen extends Component {
 const mapStateToProps = (state) => {
     console.log(state);
     return {
-
+        userId:state.firebase.auth.uid,
         auth: state.firebase.auth
     };
 };

@@ -5,8 +5,10 @@ class WireframeCard extends React.Component {
     handleDeleteWireFrame=(e)=>{
         console.log('clicked!');
         e.preventDefault();
-        var firestore=getFirestore();
-        firestore.collection('wireframes').doc(this.props.wireframe.id).delete();
+        if(window.confirm('Are you sure you want to delete this wireframe? This action cannot be undone!')){
+            var firestore=getFirestore();
+            firestore.collection('wireframes').doc(this.props.wireframe.id).delete();
+        }
     }
     render() {
         const { wireframe } = this.props;
