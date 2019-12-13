@@ -16,9 +16,13 @@ class Wireframe extends Component{
         duplicate:0,
         position:{x:100,y:100},
         key:0,
+        dragging:null,
     }
 
     componentDidMount=()=>{
+        //document.querySelector('.zoom-in').addEventListener('click',this.ZoomIn);
+        document.querySelector('.edit-container').addEventListener('click',this.deselectControls);
+        document.querySelector('.save-button').addEventListener('click',this.save);
         document.addEventListener('keydown',(e)=>{
             if(e.keyCode===46){
                 this.deleteControl();
@@ -27,6 +31,18 @@ class Wireframe extends Component{
                 this.duplicateControl();
             }
         });
+    }
+
+    save=()=>{
+        var firestore=getFirestore();
+        var controls=this.state.controls;
+        for(var i=0;i<controls.length;i++){
+            if(!controls[i].deleted){
+                controls[i].selected=false;
+            }
+        }
+        document.querySelector('.specific-props').innerHTML='';
+        firestore.collection('wireframes').doc(this.props.wireframe.id).update({controls:controls})
     }
 
     deleteControl=()=>{
@@ -64,104 +80,19 @@ class Wireframe extends Component{
     }
 
     deselectControls=(e)=>{
-        console.log(e.target);
-
-        if(e.target.classList[0]==='wireframe-box'){
-            console.log('deselecting controls!');
-            document.querySelector('.specific-props').innerHTML='';
-            this.setState({selected:null});
-        }
-    }
-
-    showButtonProps=(e)=>{
-        e.stopPropagation();
-
-        for(var i=0;i<this.state.controls.length;i++){
-            if(this.state.controls.length>0){
-                var elms = document.querySelectorAll(`[id='w${this.state.controls[i].key}']`);
-                if(elms.length>1){
-                    for(var i = 0; i < elms.length-1; i++) 
-                    elms[i].parentElement.removeChild(elms[i]);
-                }
+        console.log(e.target.classList);
+        if(this.state.dragging===null){
+            if((e.target.classList[0]==='wireframe-box'||e.target.classList[0]==='edit-container'||e.target.classList[0]==='edit-container') && this.state.selected){
+                console.log('deselecting controls!');
+                document.querySelector('.specific-props').innerHTML='';
+                var control=this.state.selected;
+                control.selected=false;
+                var controls=this.state.controls;
+                controls[controls.indexOf(control)]=control;
+                this.setState({controls:controls,selected:null});
             }
-        }        
-
-        document.querySelector('.specific-props').innerHTML='';
-        var trans=e.target.style.transform;
-        //e.target.style.transform=`translate(0px, 0px)`;
-        console.log(e.target);
-        //console.log(trans);
-        console.log(e.target.classList[0]);
-        var className=e.target.classList[0];
-        var index=className.split('-')[1];
-        var controls=this.handleTrans(trans,index);
-        console.log(index);
-        var button=this.state.controls[index-1];
-        var text=button.text;
-        console.log(text);
-        var markup=
-        `
-        <div class='button-markup'>
-            <span class='button-text'>
-                Text:
-            </span>
-            <input type='text' class='button-text-input' value=${text}>
-            <br></br>
-            <span class='button-text-color'>
-                Text color:
-            </span>
-            <input type='color' class='button-text-color-picker' value=${button.color}>
-            <br></br>
-            <span class='button-text-font'>
-                Font size:
-            </span>
-            <input type='text' class='button-font-input' value='${button.fontSize}' onkeydown="return ( event.ctrlKey || event.altKey 
-                || (47<event.keyCode && event.keyCode<58 && event.shiftKey==false) 
-                || (95<event.keyCode && event.keyCode<106)
-                || (event.keyCode==8) || (event.keyCode==9) 
-                || (event.keyCode>34 && event.keyCode<40) 
-                || (event.keyCode==46) ||(event.keyCode==13))">
-            <br></br>
-            <span class='button-color'>
-                Button color:
-            </span>
-            <input type='color' class='button-color-picker' value='${button.backgroundColor}'>
-            <br></br>
-            <span class='border-width'>
-                Border width:
-            </span>
-            <input type='text' class='button-border-width' value='${button.borderWidth}' onkeydown="return ( event.ctrlKey || event.altKey 
-                || (47<event.keyCode && event.keyCode<58 && event.shiftKey==false) 
-                || (95<event.keyCode && event.keyCode<106)
-                || (event.keyCode==8) || (event.keyCode==9) 
-                || (event.keyCode>34 && event.keyCode<40) 
-                || (event.keyCode==46) ||(event.keyCode==13))">
-            <br></br>
-            <span class='border-radius'>
-                Border radius:
-            </span>
-            <input type='text' class='button-border-radius' value='${button.borderRadius}' onkeydown="return ( event.ctrlKey || event.altKey 
-                || (47<event.keyCode && event.keyCode<58 && event.shiftKey==false) 
-                || (95<event.keyCode && event.keyCode<106)
-                || (event.keyCode==8) || (event.keyCode==9) 
-                || (event.keyCode>34 && event.keyCode<40) 
-                || (event.keyCode==46) ||(event.keyCode==13))">
-            <br></br>
-            <span class='border-color'>
-                Border color:
-            </span>
-            <input type='color' class='button-border-color-picker' value='${button.borderColor}'>
-        </div>
-        `
-        document.querySelector('.specific-props').innerHTML=markup;
-        document.querySelector('.button-font-input').addEventListener('change',this.handleButtonFontChange);
-        document.querySelector('.button-text-input').addEventListener('change',this.handleButtonTextChange);
-        document.querySelector('.button-color-picker').addEventListener('change',this.handleButtonColorChange);
-        document.querySelector('.button-border-width').addEventListener('change',this.handleButtonWidthChange);
-        document.querySelector('.button-border-radius').addEventListener('change',this.handleButtonRadiusChange);
-        document.querySelector('.button-border-color-picker').addEventListener('change',this.handleButtonBorderColor);
-        document.querySelector('.button-text-color-picker').addEventListener('change', this.handleButtonTextColor);
-        this.setState({controls:controls,index:index,key:this.state.key+1,selected:button});
+        }
+        this.setState({dragging:null});
     }
 
     handleButtonTextColor=()=>{
@@ -204,126 +135,6 @@ class Wireframe extends Component{
         var controls=this.state.controls;
         controls[this.state.index-1].text=document.querySelector('.button-text-input').value;
         this.setState({controls:controls});
-    }
-
-    showLabelProps=(e)=>{
-
-        for(var i=0;i<this.state.controls.length;i++){
-            if(this.state.controls.length>0){
-                var elms = document.querySelectorAll(`[id='w${this.state.controls[i].key}']`);
-                if(elms.length>1){
-                    for(var i = 0; i < elms.length-1; i++) 
-                    elms[i].parentElement.removeChild(elms[i]);
-                }
-            }
-        }
-
-        e.stopPropagation();
-        document.querySelector('.specific-props').innerHTML='';
-        var trans=e.target.style.transform;
-        console.log(console.log(e.target.classList[0]));
-        var className=e.target.classList[0];
-        var index=className.split('-')[1];
-        var label=this.state.controls[index-1];
-        var controls=this.handleTrans(trans,index);
-
-        console.log(index);
-        console.log(this.state.controls[index-1]);
-
-        var font=null;
-        var markup=
-        `<div class='label-markup'>
-            <span class='font-size'>
-                Font size:
-            </span>
-            <input type='text' class='label-markup-input' value='${label.fontSize}' onkeydown="return ( event.ctrlKey || event.altKey 
-                || (47<event.keyCode && event.keyCode<58 && event.shiftKey==false) 
-                || (95<event.keyCode && event.keyCode<106)
-                || (event.keyCode==8) || (event.keyCode==9) 
-                || (event.keyCode>34 && event.keyCode<40) 
-                || (event.keyCode==46) ||(event.keyCode==13))">
-            <br></br>
-            <span class='label-text'>
-                Label text:
-            <input type='text' class='label-markup-text' value='${label.text}'>
-            </span>
-            <br></br>
-            <span class='label-text-color'>
-                Text color:
-            </span>
-            <input type="color" class="label-color-picker" value='${label.color}'>
-        </div>`;
-        document.querySelector('.specific-props').innerHTML=markup;
-        document.querySelector('.label-markup-input').addEventListener('change',this.handleLabelFontChange);
-        document.querySelector('.label-markup-text').addEventListener('change',this.handleLabelTextChange);
-        document.querySelector('.label-color-picker').addEventListener('change',this.handleLabelColorPicker);
-        this.setState({controls:controls,index:index,key:this.state.key+1,selected:label});
-    }
-
-    showTextfieldProps=(e)=>{
-        e.stopPropagation();
-        
-        for(var i=0;i<this.state.controls.length;i++){
-            if(this.state.controls.length>0){
-                var elms = document.querySelectorAll(`[id='w${this.state.controls[i].key}']`);
-                if(elms.length>1){
-                    for(var i = 0; i < elms.length-1; i++) 
-                    elms[i].parentElement.removeChild(elms[i]);
-                }
-            }
-        }
-
-
-        document.querySelector('.specific-props').innerHTML='';
-        console.log(e.target.classList);
-        var className=e.target.classList[0];
-        console.log(className);
-        console.log(e.target);
-        var index=className.split('-')[1];
-        console.log(this.state.controls);
-        var controls=this.handleTrans(e.target.style.transform,index);
-        /*var coords=this.getCoords(e.target.style.transform);
-        console.log(coords);*/
-        var textfield=this.state.controls[index-1];
-        /*textfield.right=coords.x;
-        textfield.top=coords.y;
-        controls[index-1]=textfield;
-        this.setState({controls:controls});*/
-        console.log(textfield);
-        var markup=`
-        <div class='textfield-markup'>
-            <span class='textfield-text'>
-                Text:
-            </span>
-            <input type='text' class='textfield-text-input' value='${textfield.text}'>
-            <br></br>
-            <span class='textfield-font'>
-                Font:
-            </span>
-            <input type='text' class='textfield-font-input' value='${textfield.fontSize}' onkeydown="return ( event.ctrlKey || event.altKey 
-                || (47<event.keyCode && event.keyCode<58 && event.shiftKey==false) 
-                || (95<event.keyCode && event.keyCode<106)
-                || (event.keyCode==8) || (event.keyCode==9) 
-                || (event.keyCode>34 && event.keyCode<40) 
-                || (event.keyCode==46) ||(event.keyCode==13))">
-            <br></br>
-            <span class='textfield-text-color'>
-                Text color:
-            </span>
-            <input type='color' class='textfield-text-color-picker' value='${textfield.color}'>
-            <br></br>
-            <span class='textfield-bg-color'>
-                Background color:
-            </span>
-            <input type='color' class='textfield-bg-color-picker' value='${textfield.backgroundColor}'>
-        </div>
-        `;
-        document.querySelector('.specific-props').innerHTML=markup;
-        document.querySelector('.textfield-text-input').addEventListener('change',this.handleTextfieldTextChange);
-        document.querySelector('.textfield-font-input').addEventListener('change',this.handleTextfieldFontChange);
-        document.querySelector('.textfield-text-color-picker').addEventListener('change',this.handleTextfieldTextColor);
-        document.querySelector('.textfield-bg-color-picker').addEventListener('change',this.handleTextfieldBGColor);
-        this.setState({controls:controls,index:index, key:this.state.key+1,selected:textfield});
     }
 
     getCoords=(translate)=>{
@@ -379,73 +190,6 @@ class Wireframe extends Component{
         this.setState({controls:controls});
     }
 
-    showContainerProps=(e)=>{
-        e.stopPropagation();
-
-        if(e.target.classList[0]!=='resizer'){
-            for(var i=0;i<this.state.controls.length;i++){
-            if(this.state.controls.length>0){
-                var elms = document.querySelectorAll(`[id='w${this.state.controls[i].key}']`);
-                if(elms.length>1){
-                    for(var i = 0; i < elms.length-1; i++) 
-                    elms[i].parentElement.removeChild(elms[i]);
-                }
-            }
-        }
-
-        var controls=this.state.controls;
-        var trans=e.target.style.transform;
-        document.querySelector('.specific-props').innerHTML='';
-        console.log(e.target.classList);
-        var className=e.target.classList[0];
-        console.log(className);
-        var index=className.split('-')[1];
-        var controls=this.handleTrans(trans,index);
-        console.log(this.state.controls);
-        var container=this.state.controls[index-1];
-        
-        var markup=`
-        <div class='container-markup'>
-        <br></br>
-            <span class='container-color'>
-                Background color:
-            </span>
-            <input type='color' class='container-color-picker' value='${container.backgroundColor}'>
-            <br></br>
-            <span class='container-border-width'>
-                Border width:
-            </span>
-            <input type='text' class='container-border-width-input' value='${container.borderWidth}' onkeydown="return ( event.ctrlKey || event.altKey 
-                || (47<event.keyCode && event.keyCode<58 && event.shiftKey==false) 
-                || (95<event.keyCode && event.keyCode<106)
-                || (event.keyCode==8) || (event.keyCode==9) 
-                || (event.keyCode>34 && event.keyCode<40) 
-                || (event.keyCode==46) ||(event.keyCode==13))">
-            <br></br>
-            <span class='container-border-radius'>
-                Border radius;
-            </span>
-            <input type='text' class='container-border-radius-input' value='${container.borderRadius}' onkeydown="return ( event.ctrlKey || event.altKey 
-                || (47<event.keyCode && event.keyCode<58 && event.shiftKey==false) 
-                || (95<event.keyCode && event.keyCode<106)
-                || (event.keyCode==8) || (event.keyCode==9) 
-                || (event.keyCode>34 && event.keyCode<40) 
-                || (event.keyCode==46) ||(event.keyCode==13))">
-            <br></br>
-            <span class='container-border-color'>
-                Border color:
-            </span>
-            <input type='color' class='container-border-color-input' value='${container.borderColor}'>
-        </div>
-        `;
-        document.querySelector('.specific-props').innerHTML=markup;
-        document.querySelector('.container-color-picker').addEventListener('change',this.handleContainerColor);
-        document.querySelector('.container-border-width-input').addEventListener('change', this.handleContainerBorderWidth);
-        document.querySelector('.container-border-radius-input').addEventListener('change',this.handleContainerBorderRadius);
-        document.querySelector('.container-border-color-input').addEventListener('change',this.handleContainerBorderColor);
-        this.setState({controls:controls,index:index,key:this.state.key+1,selected:container});}
-    }
-
     handleContainerBorderColor=()=>{
         var controls=this.state.controls;
         controls[this.state.index-1].borderColor=document.querySelector('.container-border-color-input').value;
@@ -481,6 +225,7 @@ class Wireframe extends Component{
             newControl.top=this.state.selected.top-100;
             newControl.controlWidth=this.state.selected.controlWidth;
             newControl.controlHeight=this.state.selected.controlHeight;
+            newControl.selected=false;
             console.log(newControl);
             controls.push(newControl);
             this.setState({controls:controls});
@@ -492,17 +237,23 @@ class Wireframe extends Component{
         console.log(e.target.parentElement);
     }
 
-    onDragStopContainer=(e,d)=>{
+    onDragStopContainer=(e,d,key)=>{
         e.stopPropagation();
+        console.log(e.target);
+        console.log('dragging container');
+        //if(e.target.classList[1]==='container-control' || e.target.classList[2]==='control'){
         var controls=this.state.controls;
-        console.log(e.target.classList);
+        if(this.state.selected){
+            controls[controls.indexOf(this.state.selected)].selected=false;
+        }
+        /*console.log(e.target.classList);
         var className=e.target.classList[0];
         console.log(className);
-        var index=className.split('-')[1];
-        var container=controls[index-1];
-        controls[index-1].left=d.x;
-        controls[index-1].top=d.y;
-
+        var index=className.split('-')[1];*/
+        var container=controls[key-1];
+        controls[key-1].left=d.x;
+        controls[key-1].top=d.y;
+        controls[key-1].selected=true;
         var markup=`
         <div class='container-markup'>
         <br></br>
@@ -543,58 +294,73 @@ class Wireframe extends Component{
         document.querySelector('.container-border-radius-input').addEventListener('change',this.handleContainerBorderRadius);
         document.querySelector('.container-border-color-input').addEventListener('change',this.handleContainerBorderColor);
 
-        this.setState({controls:controls,index:index,selected:container});
+        this.setState({controls:controls,index:key,selected:container});
+       // }
     }
 
-    onDragStopLabel=(e,d)=>{
+    onDragStopLabel=(e,d,key)=>{
         e.stopPropagation();
+        //if(e.target.classList[1]==='label-control'){
         var controls=this.state.controls;
-        console.log(e.target);
-        var className=e.target.classList[0];
-        console.log(className);
-        var index=className.split('-')[1];
-        var label=controls[index-1];
-        controls[index-1].left=d.x;
-        controls[index-1].top=d.y;
+        //if(this.state.dragging.name==='addLabel'){
+            if(this.state.selected){
+                controls[controls.indexOf(this.state.selected)].selected=false;
+            }
 
-        var markup=
-        `<div class='label-markup'>
-            <span class='font-size'>
-                Font size:
-            </span>
-            <input type='text' class='label-markup-input' value='${label.fontSize}' onkeydown="return ( event.ctrlKey || event.altKey 
-                || (47<event.keyCode && event.keyCode<58 && event.shiftKey==false) 
-                || (95<event.keyCode && event.keyCode<106)
-                || (event.keyCode==8) || (event.keyCode==9) 
-                || (event.keyCode>34 && event.keyCode<40) 
-                || (event.keyCode==46) ||(event.keyCode==13))">
-            <br></br>
-            <span class='label-text'>
-                Label text:
-            <input type='text' class='label-markup-text' value='${label.text}'>
-            </span>
-            <br></br>
-            <span class='label-text-color'>
-                Text color:
-            </span>
-            <input type="color" class="label-color-picker" value='${label.color}'>
-        </div>`;
-        document.querySelector('.specific-props').innerHTML=markup;
-        document.querySelector('.label-markup-input').addEventListener('change',this.handleLabelFontChange);
-        document.querySelector('.label-markup-text').addEventListener('change',this.handleLabelTextChange);
-        document.querySelector('.label-color-picker').addEventListener('change',this.handleLabelColorPicker);
-        this.setState({controls:controls,index:index,selected:label});
+            console.log(e.target);
+            var className=e.target.classList[0];
+            console.log(className);
+            var index=className.split('-')[1];
+            var label=controls[key-1];
+            controls[key-1].left=d.x;
+            controls[key-1].top=d.y;
+            controls[key-1].selected=true;
+            
+            var markup=
+            `<div class='label-markup'>
+                <span class='font-size'>
+                    Font size:
+                </span>
+                <input type='text' class='label-markup-input' value='${label.fontSize}' onkeydown="return ( event.ctrlKey || event.altKey 
+                    || (47<event.keyCode && event.keyCode<58 && event.shiftKey==false) 
+                    || (95<event.keyCode && event.keyCode<106)
+                    || (event.keyCode==8) || (event.keyCode==9) 
+                    || (event.keyCode>34 && event.keyCode<40) 
+                    || (event.keyCode==46) ||(event.keyCode==13))">
+                <br></br>
+                <span class='label-text'>
+                    Label text:
+                <input type='text' class='label-markup-text' value='${label.text}'>
+                </span>
+                <br></br>
+                <span class='label-text-color'>
+                    Text color:
+                </span>
+                <input type="color" class="label-color-picker" value='${label.color}'>
+            </div>`;
+            document.querySelector('.specific-props').innerHTML=markup;
+            document.querySelector('.label-markup-input').addEventListener('change',this.handleLabelFontChange);
+            document.querySelector('.label-markup-text').addEventListener('change',this.handleLabelTextChange);
+            document.querySelector('.label-color-picker').addEventListener('change',this.handleLabelColorPicker);
+            this.setState({controls:controls,index:key,selected:label});
+            //}
+        
     }
 
     onResizeStopContainer=(e, direction, ref, delta, position,key)=>{
         e.stopPropagation();
+        
         var controls=this.state.controls;
+        if(this.state.selected){
+            controls[controls.indexOf(this.state.selected)].selected=false;
+        }
         console.log(key)
         controls[key-1].controlWidth=parseInt(controls[key-1].controlWidth)+parseInt(delta.width);
         controls[key-1].controlHeight=parseInt(controls[key-1].controlHeight)+parseInt(delta.height);
         console.log(position);
         var index=key;
         var container=controls[key-1];
+        controls[key-1].selected=true;
         var markup=`
         <div class='container-markup'>
         <br></br>
@@ -636,14 +402,19 @@ class Wireframe extends Component{
         document.querySelector('.container-border-color-input').addEventListener('change',this.handleContainerBorderColor);
 
         this.setState({controls:controls,index:index,selected:container});
+        
     }
 
     onResizeStopLabel=(e, direction, ref, delta, position,key)=>{
         e.stopPropagation();
         var controls=this.state.controls;
+        if(this.state.selected){
+            controls[controls.indexOf(this.state.selected)].selected=false;
+        }
         console.log(key)
         controls[key-1].controlWidth=parseInt(controls[key-1].controlWidth)+parseInt(delta.width);
         controls[key-1].controlHeight=parseInt(controls[key-1].controlHeight)+parseInt(delta.height);
+        controls[key-1].selected=true;
         console.log(position);
         var index=key;
         var label=controls[key-1];
@@ -675,18 +446,25 @@ class Wireframe extends Component{
         document.querySelector('.label-markup-text').addEventListener('change',this.handleLabelTextChange);
         document.querySelector('.label-color-picker').addEventListener('change',this.handleLabelColorPicker);
         this.setState({controls:controls,index:index,selected:label});
+        
     }
 
-    onDragStopButton=(e,d)=>{
+    onDragStopButton=(e,d,key)=>{
+        
         e.stopPropagation();
+        //if(e.target.classList[1]==='button-control'){
         var controls=this.state.controls;
+        if(this.state.selected){
+            controls[controls.indexOf(this.state.selected)].selected=false;
+        }
         console.log(e.target);
         var className=e.target.classList[0];
         console.log(className);
         var index=className.split('-')[1];
-        var button=controls[index-1];
-        controls[index-1].left=d.x;
-        controls[index-1].top=d.y;
+        var button=controls[key-1];
+        controls[key-1].left=d.x;
+        controls[key-1].top=d.y;
+        controls[key-1].selected=true;
         var markup=
         `
         <div class='button-markup'>
@@ -749,15 +527,20 @@ class Wireframe extends Component{
         document.querySelector('.button-border-radius').addEventListener('change',this.handleButtonRadiusChange);
         document.querySelector('.button-border-color-picker').addEventListener('change',this.handleButtonBorderColor);
         document.querySelector('.button-text-color-picker').addEventListener('change', this.handleButtonTextColor);
-        this.setState({controls:controls,index:index,selected:button});
+        this.setState({controls:controls,index:key,selected:button});
+       // }
     }
 
     onResizeStopButton=(e, direction, ref, delta, position,key)=>{
         e.stopPropagation();
         var controls=this.state.controls;
+        if(this.state.selected){
+            controls[controls.indexOf(this.state.selected)].selected=false;
+        }
         console.log(key)
         controls[key-1].controlWidth=parseInt(controls[key-1].controlWidth)+parseInt(delta.width);
         controls[key-1].controlHeight=parseInt(controls[key-1].controlHeight)+parseInt(delta.height);
+        controls[key-1].selected=true;
         console.log(position);
         var index=key;
         var button=controls[key-1];
@@ -824,18 +607,24 @@ class Wireframe extends Component{
         document.querySelector('.button-border-color-picker').addEventListener('change',this.handleButtonBorderColor);
         document.querySelector('.button-text-color-picker').addEventListener('change', this.handleButtonTextColor);
         this.setState({controls:controls,index:index,selected:button});
+        
     }
 
-    onDragStopText=(e,d)=>{
+    onDragStopText=(e,d,key)=>{
         e.stopPropagation();
+        //if(e.target.classList[1]==='input-control'){
         var controls=this.state.controls;
+        if(this.state.selected){
+            controls[controls.indexOf(this.state.selected)].selected=false;
+        }
         console.log(e.target);
         var className=e.target.classList[0];
         console.log(className);
         var index=className.split('-')[1];
-        var textfield=controls[index-1];
-        controls[index-1].left=d.x;
-        controls[index-1].top=d.y;
+        var textfield=controls[key-1];
+        controls[key-1].left=d.x;
+        controls[key-1].top=d.y;
+        controls[key-1].selected=true;
         var markup=`
         <div class='textfield-markup'>
             <span class='textfield-text'>
@@ -869,15 +658,20 @@ class Wireframe extends Component{
         document.querySelector('.textfield-font-input').addEventListener('change',this.handleTextfieldFontChange);
         document.querySelector('.textfield-text-color-picker').addEventListener('change',this.handleTextfieldTextColor);
         document.querySelector('.textfield-bg-color-picker').addEventListener('change',this.handleTextfieldBGColor);
-        this.setState({controls:controls,index:index, selected:textfield});
+        this.setState({controls:controls,index:key, selected:textfield});
+        //}
     }
 
     onResizeStopText=(e, direction, ref, delta, position,key)=>{
         e.stopPropagation();
         var controls=this.state.controls;
+        if(this.state.selected){
+            controls[controls.indexOf(this.state.selected)].selected=false;
+        }
         console.log(key)
         controls[key-1].controlWidth=parseInt(controls[key-1].controlWidth)+parseInt(delta.width);
         controls[key-1].controlHeight=parseInt(controls[key-1].controlHeight)+parseInt(delta.height);
+        controls[key-1].selected=true;
         console.log(position);
         var index=key;
         var textfield=controls[key-1];
@@ -915,6 +709,12 @@ class Wireframe extends Component{
         document.querySelector('.textfield-text-color-picker').addEventListener('change',this.handleTextfieldTextColor);
         document.querySelector('.textfield-bg-color-picker').addEventListener('change',this.handleTextfieldBGColor);
         this.setState({controls:controls,index:index, selected:textfield});
+        
+    }
+
+    setDragged=(e,key)=>{
+        console.log(e.target);
+        this.setState({dragging:this.state.controls[key-1]})
     }
 
 render(){
@@ -937,25 +737,8 @@ render(){
                 {wireframeControls.map(control=>{
                     key++;
                         if(control.name==='addButton' && !control.deleted){
-                            /*var styling1=
-                            {position:'absolute',
-                                zIndex:'99',
-                                left:`${control.left}px`,
-                                top:`${control.top}px`,
-                                width:`${control.controlWidth}px`,
-                                height:`${control.controlHeight}px`,
-                                textAlign:'center',
-                                fontSize:this.state.controls?(this.state.controls[control.key-1]?`${this.state.controls[control.key-1].fontSize}px`:`${control.fontSize}px`):`${control.fontSize}px`,
-                                backgroundColor:this.state.controls?(this.state.controls[control.key-1]?`${this.state.controls[control.key-1].backgroundColor}`:`${control.backgroundColor}`):`${control.backgroundColor}`,
-                                text:this.state.controls?(this.state.controls[control.key-1]?`${this.state.controls[control.key-1].text}`:`${control.text}`):`${control.text}`,
-                                borderStyle:control.borderStyle,
-                                borderWidth:`${control.borderWidth}px`,
-                                borderColor:control.borderColor,
-                                borderRadius:`${control.borderRadius}px`,
-                                color:`${control.color}`,
-                            }*/
-
                             var styling1={
+                                position:'absolute',
                                 margin:'auto',
                                 textAlign:'center',
                                 fontSize:this.state.controls?(this.state.controls[control.key-1]?`${this.state.controls[control.key-1].fontSize}px`:`${control.fontSize}px`):`${control.fontSize}px`,
@@ -966,111 +749,166 @@ render(){
                                 borderColor:control.borderColor,
                                 borderRadius:`${control.borderRadius}px`,
                                 color:`${control.color}`,
+                                zIndex:`${control.key}`
                                 
                             }
+
+                            var selected='';
+                            var nwBox=
+                            <div class='nwBox' style={{width:'10px', height:'10px',background:'blue',position:'absolute',left:'0',top:'0'}}>
+                            </div>
+                            var swBox=
+                            <div class='swBox' style={{width:'10px', height:'10px',background:'blue',position:'absolute',left:'0',bottom:'0'}}>
+                            </div>
+                            var neBox=
+                            <div class='neBox' style={{width:'10px', height:'10px',background:'blue',position:'absolute',right:'0',top:'0'}}>
+                            </div>
+                            var seBox=
+                            <div class='seBox' style={{width: '10px', height: '10px', background: 'blue', position:'absolute', right: '0', bottom:'0'}}></div>
+                            if(control.selected){
+                                selected='selected';
+                            }
+
                             return (
                                 <Rnd id={`w${control.key}`} 
-                                className={`button-${control.key} button-control`}
+                                className={`button-${control.key} button-control ${selected}`}
                                 default={{width:control.controlWidth,height:control.controlHeight}} 
                                 position={{x:control.left,y:control.top}}
-                                style={styling1} className={`button-${control.key} button-control`} 
-                                onDragStop={this.onDragStopButton} 
+                                style={styling1} className={`button-${control.key} button-control control ${selected}`} 
+                                onDragStop={(e,d)=>this.onDragStopButton(e,d,control.key)} 
                                 onResizeStop={(e, direction, ref, delta, position)=>this.onResizeStopButton(e, direction, ref, delta, position,control.key)} 
                                 bounds='parent'>
                                     {control.text}
+                                    {control.selected?seBox:''}
+                                        {control.selected?neBox:''}
+                                        {control.selected?swBox:''}
+                                        {control.selected?nwBox:''}
                                 </Rnd>
                             )
                         }
                         if(control.name==='addTextField'  && !control.deleted){
-                            /*var styling2=
-                            {
-                                position:'absolute',
-                                zIndex:'99',
-                                left:`${control.left}px`,
-                                top:`${control.top}px`,
-                                width:`${control.controlWidth}px`,
-                                height:`${control.controlHeight}px`,
-                                backgroundColor:this.state.controls?(this.state.controls[control.key-1]?`${this.state.controls[control.key-1].backgroundColor}`:`${control.backgroundColor}`):`${control.backgroundColor}`,
-                                color:this.state.controls?(this.state.controls[control.key-1]?`${this.state.controls[control.key-1].color}`:`${control.color}`):`${control.color}`,
-                                fontSize:this.state.controls?(this.state.controls[control.key-1]?`${this.state.controls[control.key-1].fontSize}px`:`${control.fontSize}px`):`${control.fontSize}px`,
-                            }*/
+
+                            var selected='';
+                            var nwBox=
+                            <div class='nwBox' style={{width:'10px', height:'10px',background:'blue',position:'absolute',left:'0',top:'0'}}>
+                            </div>
+                            var swBox=
+                            <div class='swBox' style={{width:'10px', height:'10px',background:'blue',position:'absolute',left:'0',bottom:'0'}}>
+                            </div>
+                            var neBox=
+                            <div class='neBox' style={{width:'10px', height:'10px',background:'blue',position:'absolute',right:'0',top:'0'}}>
+                            </div>
+                            var seBox=
+                            <div class='seBox' style={{width: '10px', height: '10px', background: 'blue', position:'absolute', right: '0', bottom:'0'}}></div>
+                            if(control.selected){
+                                selected='selected';
+                            }
 
                             var styling2={
-                                zIndex:'99',
+                                position:'absolute',
                                 backgroundColor:`${control.backgroundColor}`,
                                 color:`${control.color}`,
                                 fontSize:`${control.fontSize}px`,
+                                zIndex:`${control.key}`
                             }
                             return(
-                                <Rnd id={`w${control.key}`} className={`input-${control.key} input-control`}
+                                <Rnd id={`w${control.key}`} className={`input-${control.key} input-control control ${selected}`}
                                 default={{width:control.controlWidth,height:control.controlHeight}} 
                                 position={{x:control.left,y:control.top}} style={styling2} 
-                                onDragStop={this.onDragStopText}
+                                onDragStop={(e,d)=>this.onDragStopText(e,d,control.key)}
                                 onResizeStop={(e, direction, ref, delta, position)=>this.onResizeStopText(e, direction, ref, delta, position,control.key)}
                                 bounds='parent'>
                                     {control.text}
+                                    {control.selected?seBox:''}
+                                    {control.selected?neBox:''}
+                                    {control.selected?swBox:''}
+                                    {control.selected?nwBox:''}
                                 </Rnd>
                                 
                             )
                         }
                         if(control.name==='addLabel'  && !control.deleted){
                             console.log(control.key);
-                            //var styling3={
-                                //position:'absolute',
-                                //zIndex:'99',
-                                //left:`${control.left}px`,
-                                //top:`${control.top}px`,
-                                //width:`${control.controlWidth}px`,
-                                //fontSize:this.state.controls?(this.state.controls[control.key-1]?`${this.state.controls[control.key-1].fontSize}px`:`${control.fontSize}px`):`${control.fontSize}px`,//`${control.fontSize}px`,
-                                //height:`${control.controlHeight}px`,
-                                //color:this.state.controls?(this.state.controls[control.key-1]?`${this.state.controls[control.key-1].color}`:`${control.color}`):`${control.color}`
-                           // }
 
                             var styling3={
-                                zIndex:'99',
+                                position:'absolute',
                                 fontSize:`${control.fontSize}px`,
                                 color:`${control.color}`,
+                                zIndex:`${control.key}`
                             }
+
+                            var selected='';
+                            var nwBox=
+                            <div class='nwBox' style={{width:'10px', height:'10px',background:'blue',position:'absolute',left:'0',top:'0'}}>
+                            </div>
+                            var swBox=
+                            <div class='swBox' style={{width:'10px', height:'10px',background:'blue',position:'absolute',left:'0',bottom:'0'}}>
+                            </div>
+                            var neBox=
+                            <div class='neBox' style={{width:'10px', height:'10px',background:'blue',position:'absolute',right:'0',top:'0'}}>
+                            </div>
+                            var seBox=
+                            <div class='seBox' style={{width: '10px', height: '10px', background: 'blue', position:'absolute', right: '0', bottom:'0'}}></div>
+                            if(control.selected){
+                                selected='selected';
+                            }
+
                             return(
-                                <Rnd id={`w${control.key}`} className={`label-${control.key} label-control`} 
+                                <Rnd id={`w${control.key}`} className={`label-${control.key} label-control control ${selected}`} 
                                 default={{width:control.controlWidth,height:control.controlHeight}} 
                                 position={{x:control.left,y:control.top}} style={styling3} 
-                                onDragStop={this.onDragStopLabel}
+                                onDragStop={(e,d)=>this.onDragStopLabel(e,d,control.key)}
                                 onResizeStop={(e, direction, ref, delta, position)=>this.onResizeStopLabel(e, direction, ref, delta, position,control.key)}
                                 bounds='parent'>
                                     {`${control.text}`}
+                                    {control.selected?seBox:''}
+                                        {control.selected?neBox:''}
+                                        {control.selected?swBox:''}
+                                        {control.selected?nwBox:''}
                                 </Rnd>
                                 
                             )
                         }else if(control.name==='addContainer' && !control.deleted){
-                            /*var styling4={
+                            var selected='';
+                            var nwBox=
+                            <div class='nwBox' style={{width:'10px', height:'10px',background:'blue',position:'absolute',left:'0',top:'0'}}>
+                            </div>
+                            var swBox=
+                            <div class='swBox' style={{width:'10px', height:'10px',background:'blue',position:'absolute',left:'0',bottom:'0'}}>
+                            </div>
+                            var neBox=
+                            <div class='neBox' style={{width:'10px', height:'10px',background:'blue',position:'absolute',right:'0',top:'0'}}>
+                            </div>
+                            var seBox=
+                            <div class='seBox' style={{width: '10px', height: '10px', background: 'blue', position:'absolute', right: '0', bottom:'0'}}></div>
+                            if(control.selected){
+                                selected='selected';
+                            }
+                            var styling4={
                                 position:'absolute',
-                                left:`${control.left}px`,
-                                top:`${control.top}px`,
-                                width:`${control.controlWidth}px`,
-                                height:`${control.controlHeight}px`,
                                 backgroundColor:`${control.backgroundColor}`,
                                 borderStyle:`${control.borderStyle}`,
                                 borderWidth:`${control.borderWidth}px`,
                                 borderColor:`${control.borderColor}`,
                                 borderRadius:`${control.borderRadius}px`,
-                                zIndex:'1',
-                            }*/
-                            var styling4={backgroundColor:`${control.backgroundColor}`,
-                            borderStyle:`${control.borderStyle}`,
-                            borderWidth:`${control.borderWidth}px`,
-                            borderColor:`${control.borderColor}`,
-                            borderRadius:`${control.borderRadius}px`,
-                            zIndex:'1',}
-                            return(
-                                <Rnd
-                                id={`w${control.key}`} className={`container-${control.key} container-control`}
-                                default={{width:control.controlWidth,height:control.controlHeight}} position={{x:control.left,y:control.top}} onDragStop={this.onDragStopContainer} onResizeStop={(e, direction, ref, delta, position)=>this.onResizeStopContainer(e, direction, ref, delta, position,control.key)} bounds='parent' style={styling4}>
-                                    <div >
-                                      
-                                    </div>
-                                </Rnd>
-                            )
+                                zIndex:`${control.key}`
+                            }
+                                return(
+                                    <Rnd
+                                    id={`w${control.key}`} className={`container-${control.key} container-control control ${selected}`}
+                                    default={{width:control.controlWidth,height:control.controlHeight}} 
+                                    position={{x:control.left,y:control.top}}  
+                                    onDragStop={(e,d)=>this.onDragStopContainer(e,d,control.key)} 
+                                    onResizeStop={(e, direction, ref, delta, position)=>this.onResizeStopContainer(e, direction, ref, delta, position,control.key)} 
+                                    bounds='parent' 
+                                    style={styling4}>
+                                        {control.selected?seBox:''}
+                                        {control.selected?neBox:''}
+                                        {control.selected?swBox:''}
+                                        {control.selected?nwBox:''}
+                                    </Rnd>
+                                )
+                            
                         }
                         
                     })}

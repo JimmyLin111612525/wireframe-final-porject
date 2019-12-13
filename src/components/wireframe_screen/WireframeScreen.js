@@ -166,6 +166,7 @@ class WireframeScreen extends Component{
             borderRadius:'5',
             key:wireframe.controls.length+1,
             deleted:false,
+            selected:false,
         }
         wireframe.controls.push(addContainer);
         this.setState({wireframe:wireframe});
@@ -192,6 +193,8 @@ class WireframeScreen extends Component{
             key:wireframe.controls.length+1,
             transX:'0',
             transY:'0',
+            deleted:false,
+            selected:true,
         }
 
         wireframe.controls.push(addButton);
@@ -199,16 +202,16 @@ class WireframeScreen extends Component{
         this.setState({wireframe:wireframe});
     }
 
-    handleSave=()=>{
-        /*var wireframe=this.state.wireframe;
-        for(var i=0;i<wireframe.controls.length;i++){
+    //handleSave=()=>{
+        //var wireframe=this.state.wireframe;
+        /*for(var i=0;i<wireframe.controls.length;i++){
             wireframe.controls[i].left=wireframe.controls[i].transX;
             wireframe.controls[i].top=wireframe.controls[i].transY;
-        }
-        var firestore=getFirestore();
-        firestore.collection('wireframes').doc(wireframe.id).update({controls:wireframe.controls});*/
-        console.log('save triggered. implement save you dumbass.')
-    }
+        }*/
+        //var firestore=getFirestore();
+        //firestore.collection('wireframes').doc(wireframe.id).update({controls:wireframe.controls});
+        //console.log('save triggered. implement save you dumbass.')
+    //}
     
 
     handleAddTextField=()=>{
@@ -226,6 +229,8 @@ class WireframeScreen extends Component{
             key:wireframe.controls.length+1,
             transX:'0',
             transY:'0',
+            deleted:false,
+            selected:false,
         }
         wireframe.controls.push(addTextField);
         this.setState({wireframe:wireframe});
@@ -245,9 +250,15 @@ class WireframeScreen extends Component{
             key:wireframe.controls.length+1,
             transX:'0',
             transY:'0',
+            deleted:false,
+            selected:false,
         }
         wireframe.controls.push(addLabel);
         this.setState({wireframe:wireframe});
+    }
+
+    handleZoomIn=()=>{
+        console.log('zoom in');
     }
 
     render(){
@@ -272,7 +283,7 @@ class WireframeScreen extends Component{
             return <Redirect to='/'/>
         }
 
-
+        var zoomStyle=null;
         return(
             
             <div>
@@ -282,7 +293,7 @@ class WireframeScreen extends Component{
                 </div>
                 <div className='edit-container z-depth-3'>
                     <div className="zoom-container">
-                        <i className="material-icons zoom-in waves-effect waves-light">zoom_in</i>
+                        <i className="material-icons zoom-in waves-effect waves-light" onClick={this.handleZoomIn}>zoom_in</i>
                         <i className="material-icons zoom-out waves-effect waves-light">zoom_out</i>
                     </div>
                     <div className="properties-container">
@@ -304,7 +315,7 @@ class WireframeScreen extends Component{
                     </div>
 
                     <div className="edit-save-close">
-                        <Button className="save-button green hoverable" style={{fontSize:'7px',height:'15px'}} onClick={this.handleSave}>
+                        <Button className="save-button green hoverable" style={{fontSize:'7px',height:'15px'}}>
                         </Button>
                         <Button className="close-button red darken-2 hoverable" onClick={this.handleCloseEditScreen} style={{fontSize:'7px',height:'15px'}}>
                         </Button>
