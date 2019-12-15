@@ -9,31 +9,35 @@ class DatabaseTester extends React.Component {
     // DO THIS ANY TIME YOU LIKE WITHOUT HAVING
     // TO LOG IN
     handleClear = () => {
-        const fireStore = getFirestore();
-        fireStore.collection('wireframes').get().then(function(querySnapshot){
-            querySnapshot.forEach(function(doc) {
-                console.log("deleting " + doc.id);
-                fireStore.collection('wireframes').doc(doc.id).delete();
-            })
-        });
+        if(this.props.firebase.profile.administrator!==undefined && this.props.firebase.profile.administrator){
+            const fireStore = getFirestore();
+            fireStore.collection('wireframes').get().then(function(querySnapshot){
+                querySnapshot.forEach(function(doc) {
+                    console.log("deleting " + doc.id);
+                    fireStore.collection('wireframes').doc(doc.id).delete();
+                })
+            });
+        }
     }
 
     handleReset = () => {
-        const fireStore = getFirestore();
-        wireframeJson.wireFrames.forEach(wireframeJson => {
-            fireStore.collection('wireframes').add({
-                    name: wireframeJson.name,
-                    wireframeWidth:wireframeJson.wireFrameWidth,
-                    wireframeHeight:wireframeJson.wireFrameHeight,
-                    controls:wireframeJson.controls,
-                    userId:wireframeJson.userId,
-                    created: Date.now()
-                }).then(() => {
-                    console.log("DATABASE RESET");
-                }).catch((err) => {
-                    console.log(err);
-                });
-        });
+        if(this.props.firebase.profile.administrator!==undefined && this.props.firebase.profile.administrator){
+            const fireStore = getFirestore();
+            wireframeJson.wireFrames.forEach(wireframeJson => {
+                fireStore.collection('wireframes').add({
+                        name: wireframeJson.name,
+                        wireframeWidth:wireframeJson.wireFrameWidth,
+                        wireframeHeight:wireframeJson.wireFrameHeight,
+                        controls:wireframeJson.controls,
+                        userId:wireframeJson.userId,
+                        created: Date.now()
+                    }).then(() => {
+                        console.log("DATABASE RESET");
+                    }).catch((err) => {
+                        console.log(err);
+                    });
+            });
+        }
     }
 
     render() {
